@@ -5,12 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class FacilitySystem extends Model
+class SystemValue extends Model
 {
-    protected $table = 'facility_systems';
+    protected $table = 'system_values';
     protected $fillable = [
         'facility_id',
         'system_id',
+        'temperature',
+        'smoke',
+        'spray',
+        'status',
+        'movement',
     ];
 
     public function facility(): BelongsTo
