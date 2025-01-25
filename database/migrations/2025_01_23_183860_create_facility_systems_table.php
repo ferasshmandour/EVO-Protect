@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\EvoSystem;
+use App\Models\Facility;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('facility_systems', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('facility_id')->references('id')->on('facilities')->onDelete('cascade');
-            $table->foreignId('system_id')->references('id')->on('evo_systems')->onDelete('cascade');
+            $table->foreignIdFor(Facility::class, 'facility_id')->constrained()->onDelete('cascade');
+            $table->foreignIdFor(EvoSystem::class, 'system_id')->constrained()->onDelete('cascade');
             $table->string('status');
             $table->timestamps();
         });

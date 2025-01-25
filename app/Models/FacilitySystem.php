@@ -11,6 +11,7 @@ class FacilitySystem extends Model
     protected $fillable = [
         'facility_id',
         'system_id',
+        'status',
     ];
 
     public function facility(): BelongsTo

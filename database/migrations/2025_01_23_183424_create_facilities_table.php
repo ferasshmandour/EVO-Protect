@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Area;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,8 +15,8 @@ return new class extends Migration {
         Schema::create('facilities', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignIdFor('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreignIdFor('area_id')->references('id')->on('areas')->onDelete('cascade');
+            $table->foreignIdFor(User::class, 'user_id')->constrained()->onDelete('cascade');
+            $table->foreignIdFor(Area::class, 'area_id')->constrained()->onDelete('cascade');
             $table->string('location_url')->nullable();
             $table->timestamps();
         });

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Facility;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,8 +14,8 @@ return new class extends Migration {
     {
         Schema::create('maintenance_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreignIdFor('facility_id')->references('id')->on('facilities')->onDelete('cascade');
+            $table->foreignIdFor(User::class, 'user_id')->constrained()->onDelete('cascade');
+            $table->foreignIdFor(Facility::class, 'facility_id')->constrained()->onDelete('cascade');
             $table->string('cause_of_maintenance');
             $table->timestamps();
         });
