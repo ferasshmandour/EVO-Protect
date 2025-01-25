@@ -9,4 +9,7 @@ use Illuminate\Support\Facades\Route;
 //});
 
 
+Route::get('/getAllUsers', [UserController::class, 'getAllUsers']);
 Route::post('/addUser', [UserController::class, 'addUser']);
+Route::post('/updateUser/{userId}', [UserController::class, 'updateUser']);
+Route::delete('/deleteUser/{userId}', [UserController::class, 'deleteUser']);

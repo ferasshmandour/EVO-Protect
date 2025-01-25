@@ -14,7 +14,19 @@ class EvoSystemSeeder extends Seeder
     public function run(): void
     {
         EvoSystem::create([
-            'name' => 'first system',
+            'name' => 'First system',
+            'devices' => 'test test',
+            'description' => 'test test',
+        ]);
+
+        EvoSystem::create([
+            'name' => 'Second system',
+            'devices' => 'test test',
+            'description' => 'test test',
+        ]);
+
+        EvoSystem::create([
+            'name' => 'Third system',
             'devices' => 'test test',
             'description' => 'test test',
         ]);
