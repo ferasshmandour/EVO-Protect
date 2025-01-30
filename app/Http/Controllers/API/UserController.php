@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Enums\JoinRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use App\Models\FacilitySystem;
@@ -16,7 +17,13 @@ class UserController extends Controller
 
     public function getAllUsers(): JsonResponse
     {
-        $users = User::all();
+        $users = DB::table('users', 'u')
+            ->join('join_requests as j', 'u.id', '=', 'j.user_id')
+            ->join('roles as r', 'r.id', '=', 'u.role_id')
+            ->select(['u.id as userId', 'u.name as username', 'u.phone', 'u.email', 'r.name as role'])
+            ->where('j.status', '=', JoinRequestStatus::approved)
+            ->get();
+
         return response()->json($users);
     }
 

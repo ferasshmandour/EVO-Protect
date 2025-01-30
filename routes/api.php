@@ -18,3 +18,5 @@ Route::get('/search', [UserController::class, 'search']);
 // JoinRequest APIs
 Route::post('/makeJoinRequest', [JoinRequestController::class, 'makeJoinRequest']);
 Route::get('/getAllJoinRequests', [JoinRequestController::class, 'getAllJoinRequests']);
+Route::post('/approveJoinRequest/{joinRequestId}', [JoinRequestController::class, 'approveJoinRequest']);
+Route::post('/cancelJoinRequest/{joinRequestId}', [JoinRequestController::class, 'cancelJoinRequest']);

@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
 
 class JoinRequestController extends Controller
 {
-    public function getAllJoinRequests(Request $request): JsonResponse
+    public function getAllJoinRequests(): JsonResponse
     {
         $joinRequests = JoinRequest::where('status', JoinRequestStatus::pending)->get();
 
@@ -61,6 +61,16 @@ class JoinRequestController extends Controller
                 'locationUrl.*' => 'nullable|url',
             ]);
 
+            $user = User::create([
+                'name' => $validatedRequest['name'],
+                'phone' => $validatedRequest['phone'],
+                'email' => $validatedRequest['name'] . '@gmail.com',
+                'password' => bcrypt('123456'),
+                'role_id' => 3,
+            ]);
+
+            Log::info("User asked to join " . $user->name);
+
             // Loop through facilities and create them along with their systems
             for ($i = 0; $i < $validatedRequest['numberOfFacilities']; $i++) {
                 $facilityName = $validatedRequest['facilityName'][$i] ?? null;
@@ -76,7 +86,7 @@ class JoinRequestController extends Controller
                     'name' => $facilityName,
                     'area_id' => $areaId,
                     'location_url' => $locationUrl,
-                    'user_id' => 1,
+                    'user_id' => $user->id,
                 ]);
 
                 Log::info("Facility added " . $facility->name);
@@ -94,7 +104,7 @@ class JoinRequestController extends Controller
             }
 
             $joinRequest = JoinRequest::create([
-                'user_id' => 1,
+                'user_id' => $user->id,
                 'status' => JoinRequestStatus::pending,
             ]);
 
@@ -102,6 +112,38 @@ class JoinRequestController extends Controller
 
             return response()->json(['message' => 'Join request added successfully']);
 
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function approveJoinRequest($joinRequestId): JsonResponse
+    {
+        try {
+            $joinRequest = JoinRequest::where('id', $joinRequestId)->first();
+            $joinRequest->update([
+                'status' => JoinRequestStatus::approved,
+            ]);
+
+            Log::info("Approved join request " . $joinRequest->id);
+
+            return response()->json(['message' => 'Approved join request successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function cancelJoinRequest($joinRequestId): JsonResponse
+    {
+        try {
+            $joinRequest = JoinRequest::where('id', $joinRequestId)->first();
+            $joinRequest->update([
+                'status' => JoinRequestStatus::canceled,
+            ]);
+
+            Log::info("Canceled join request " . $joinRequest->id);
+
+            return response()->json(['message' => 'Canceled join request successfully']);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
