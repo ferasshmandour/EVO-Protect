@@ -8,6 +8,7 @@ use App\Models\FacilitySystem;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
@@ -17,6 +18,12 @@ class UserController extends Controller
     {
         $users = User::all();
         return response()->json($users);
+    }
+
+    public function getUserById($userId): JsonResponse
+    {
+        $user = User::where('id', $userId)->first();
+        return response()->json($user);
     }
 
     public function addUser(Request $request): JsonResponse
@@ -45,7 +52,7 @@ class UserController extends Controller
                 'phone' => $validatedRequest['phone'],
                 'email' => $validatedRequest['email'] ?? null,
                 'password' => bcrypt('123456'),
-                'role_id' => 1,
+                'role_id' => 3,
             ]);
 
             Log::info("User added " . $user->name);
@@ -170,10 +177,16 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted successfully']);
     }
 
-    public function test(): JsonResponse
+    public function search(Request $request): JsonResponse
     {
-        $facilitySystem = FacilitySystem::where('id', 3)->first();
-        $user = $facilitySystem->facility->user->name;
-        return response()->json($user);
+        try {
+            $sql = DB::table('users')
+                ->where('name', 'like', '%' . $request->username . '%')
+                ->where('role_id', '=', $request->roleId)
+                ->get();
+            return response()->json($sql);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
     }
 }
