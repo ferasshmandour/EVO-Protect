@@ -12,6 +12,7 @@ use App\Models\FacilitySystem;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -35,6 +36,7 @@ class UserController extends Controller
                 ->join('roles as r', 'r.id', '=', 'u.role_id')
                 ->select(['u.id as userId', 'u.name as username', 'u.phone', 'u.email', 'r.name as role'])
                 ->where('j.status', '=', JoinRequestStatus::approved)
+                ->where('r.name', '=', UserRole::user)
                 ->get();
 
             $this->loggingService->addLog($request, null);
@@ -231,5 +233,15 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
+    }
+
+    public function clearCache(): string
+    {
+        Artisan::call('cache:clear');
+        Artisan::call('view:clear');
+        Artisan::call('route:clear');
+        Artisan::call('config:clear');
+        Artisan::call('config:cache');
+        return 'cleared';
     }
 }

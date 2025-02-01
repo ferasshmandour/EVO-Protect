@@ -32,7 +32,7 @@ class MaintenanceRequestController extends Controller
                 ->join('users as u', 'u.id', '=', 'r.user_id')
                 ->join('facilities as f', 'f.id', '=', 'r.facility_id')
                 ->select('r.id as maintenanceRequestId', 'u.name as username', 'u.phone', 'r.facility_id as facilityId', 'f.name as facilityName', 'r.systems', 'r.cause_of_maintenance as causeOfMaintenance', 'r.created_at as creationTime')
-                ->where('r.is_deleted', false)
+                ->where('r.is_deleted','=', false)
                 ->get();
 
             $this->loggingService->addLog($request, null);

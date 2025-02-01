@@ -30,7 +30,7 @@ class FeedBackController extends Controller
             $userFeedbacks = DB::table('user_feedbacks', 'f')
                 ->join('users as u', 'f.user_id', '=', 'u.id')
                 ->select('f.id as feedbackId', 'u.id as userId', 'u.name as username', 'u.phone', 'f.feedback', 'f.created_at as feedbackAddedDate')
-                ->where('is_deleted', false)
+                ->where('is_deleted','=', false)
                 ->get();
 
             $this->loggingService->addLog($request, null);

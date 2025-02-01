@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\API\AdminController;
 use App\Http\Controllers\API\AreaController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\EvoSystemController;
 use App\Http\Controllers\API\FeedBackController;
 use App\Http\Controllers\API\JoinRequestController;
 use App\Http\Controllers\API\MaintenanceRequestController;
+use App\Http\Controllers\API\RoleController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +28,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/updateUser/{userId}', [UserController::class, 'updateUser']);
     Route::delete('/deleteUser/{userId}', [UserController::class, 'deleteUser']);
     Route::get('/search', [UserController::class, 'search']);
+
+    // Admin APIs
+    Route::get('/getAllAdmins', [AdminController::class, 'getAllAdmins']);
+    Route::get('/getAdminById/{adminId}', [AdminController::class, 'getAdminById']);
+    Route::post('/addAdmin', [AdminController::class, 'addAdmin']);
+    Route::post('/updateAdmin/{adminId}', [AdminController::class, 'updateAdmin']);
+    Route::delete('/deleteAdmin/{adminId}', [AdminController::class, 'deleteAdmin']);
+
+    // Role APIs
+    Route::get('/getAllRoles', [RoleController::class, 'getAllRoles']);
+    Route::get('/getRoleById/{roleId}', [RoleController::class, 'getRoleById']);
+    Route::post('/changeRole', [RoleController::class, 'changeRole']);
 
     // JoinRequest APIs
     Route::post('/makeJoinRequest', [JoinRequestController::class, 'makeJoinRequest']);
@@ -57,3 +71,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/sentMaintenanceRequest', [MaintenanceRequestController::class, 'sentMaintenanceRequest']);
     Route::post('/deleteMaintenanceRequest/{maintenanceRequestId}', [MaintenanceRequestController::class, 'deleteMaintenanceRequest']);
 });
+
+Route::get('/clearCache', [UserController::class, 'clearCache']);
