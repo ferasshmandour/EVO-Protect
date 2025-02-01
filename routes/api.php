@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AreaController;
+use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\EvoSystemController;
 use App\Http\Controllers\API\FeedBackController;
 use App\Http\Controllers\API\JoinRequestController;
@@ -47,3 +48,8 @@ Route::post('/deleteFeedback/{feedbackId}', [FeedBackController::class, 'deleteF
 Route::get('/getAllMaintenanceRequests', [MaintenanceRequestController::class, 'getAllMaintenanceRequests']);
 Route::post('/sentMaintenanceRequest', [MaintenanceRequestController::class, 'sentMaintenanceRequest']);
 Route::post('/deleteMaintenanceRequest/{maintenanceRequestId}', [MaintenanceRequestController::class, 'deleteMaintenanceRequest']);
+
+// Auth APIs
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
