@@ -16,7 +16,9 @@ return new class extends Migration {
             $table->id();
             $table->foreignIdFor(User::class, 'user_id')->constrained()->onDelete('cascade');
             $table->foreignIdFor(Facility::class, 'facility_id')->constrained()->onDelete('cascade');
+            $table->string('systems');
             $table->string('cause_of_maintenance');
+            $table->boolean('is_deleted')->default(false);
             $table->timestamps();
         });
     }

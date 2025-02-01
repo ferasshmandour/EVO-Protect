@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AreaController;
 use App\Http\Controllers\API\EvoSystemController;
 use App\Http\Controllers\API\FeedBackController;
 use App\Http\Controllers\API\JoinRequestController;
+use App\Http\Controllers\API\MaintenanceRequestController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -41,3 +42,8 @@ Route::delete('/deleteEvoSystem/{systemId}', [EvoSystemController::class, 'delet
 Route::get('/getAllUserFeedBacks', [FeedBackController::class, 'getAllUserFeedBacks']);
 Route::post('/sendFeedback', [FeedBackController::class, 'sendFeedback']);
 Route::post('/deleteFeedback/{feedbackId}', [FeedBackController::class, 'deleteFeedback']);
+
+// MaintenanceRequest APIs
+Route::get('/getAllMaintenanceRequests', [MaintenanceRequestController::class, 'getAllMaintenanceRequests']);
+Route::post('/sentMaintenanceRequest', [MaintenanceRequestController::class, 'sentMaintenanceRequest']);
+Route::post('/deleteMaintenanceRequest/{maintenanceRequestId}', [MaintenanceRequestController::class, 'deleteMaintenanceRequest']);

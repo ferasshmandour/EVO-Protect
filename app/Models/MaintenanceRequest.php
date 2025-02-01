@@ -11,7 +11,9 @@ class MaintenanceRequest extends Model
     protected $fillable = [
         'user_id',
         'facility_id',
+        'systems',
         'cause_of_maintenance',
+        'is_deleted'
     ];
 
     public function user(): BelongsTo
