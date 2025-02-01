@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Enums\JoinRequestStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Services\LoggingService;
+use App\Http\Services\SecurityLayer;
 use App\Models\Facility;
 use App\Models\FacilitySystem;
 use App\Models\User;
@@ -14,91 +17,111 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+    private SecurityLayer $securityLayer;
+    private LoggingService $loggingService;
 
-    public function getAllUsers(): JsonResponse
+    public function __construct(SecurityLayer $securityLayer, LoggingService $loggingService)
     {
-        $users = DB::table('users', 'u')
-            ->join('join_requests as j', 'u.id', '=', 'j.user_id')
-            ->join('roles as r', 'r.id', '=', 'u.role_id')
-            ->select(['u.id as userId', 'u.name as username', 'u.phone', 'u.email', 'r.name as role'])
-            ->where('j.status', '=', JoinRequestStatus::approved)
-            ->get();
-
-        return response()->json($users, 200);
+        $this->securityLayer = $securityLayer;
+        $this->loggingService = $loggingService;
     }
 
-    public function getUserById($userId): JsonResponse
+    public function getAllUsers(Request $request): JsonResponse
+    {
+        $role = $this->securityLayer->getRoleFromToken();
+        if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
+            $users = DB::table('users', 'u')
+                ->join('join_requests as j', 'u.id', '=', 'j.user_id')
+                ->join('roles as r', 'r.id', '=', 'u.role_id')
+                ->select(['u.id as userId', 'u.name as username', 'u.phone', 'u.email', 'r.name as role'])
+                ->where('j.status', '=', JoinRequestStatus::approved)
+                ->get();
+
+            $this->loggingService->addLog($request, null);
+            return response()->json($users, 200);
+        } else {
+            return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
+        }
+    }
+
+    public function getUserById(Request $request, $userId): JsonResponse
     {
         $user = User::where('id', $userId)->first();
+        $this->loggingService->addLog($request, null);
         return response()->json($user, 200);
     }
 
     public function addUser(Request $request): JsonResponse
     {
         try {
-            // Validate input
-            $validatedRequest = $request->validate([
-                'name' => 'required',
-                'phone' => 'required|unique:users',
-                'email' => 'nullable|email|unique:users',
-                'numberOfFacilities' => 'required|integer',
-                'facilityName' => 'required|array', // Ensures it's an array
-                'facilityName.*' => 'required|string', // Each item must be a string
-                'systemTypeId' => 'required|array', // Validate systemTypeId as an array
-                'systemTypeId.*' => 'required|array', // Each facility's systemTypeId should be an array
-                'systemTypeId.*.*' => 'required|integer', // Each systemTypeId in the nested array should be an integer
-                'areaId' => 'required|array',
-                'areaId.*' => 'required|integer',
-                'locationUrl' => 'nullable|array',
-                'locationUrl.*' => 'nullable|url',
-            ]);
-
-            // Create the user
-            $user = User::create([
-                'name' => $validatedRequest['name'],
-                'phone' => $validatedRequest['phone'],
-                'email' => $validatedRequest['email'] ?? null,
-                'password' => bcrypt('123456'),
-                'role_id' => 3,
-            ]);
-
-            Log::info("User {$user->name} added successfully");
-
-            // Loop through facilities and create them along with their systems
-            for ($i = 0; $i < $validatedRequest['numberOfFacilities']; $i++) {
-                $facilityName = $validatedRequest['facilityName'][$i] ?? null;
-                $systemTypeIds = $validatedRequest['systemTypeId'][$i] ?? []; // Array of systemTypeId for this facility
-                $areaId = $validatedRequest['areaId'][$i] ?? null;
-                $locationUrl = $validatedRequest['locationUrl'][$i] ?? null;
-
-                if (!$facilityName || empty($systemTypeIds) || !$areaId) {
-                    continue; // Skip if required fields are missing
-                }
-
-                $facility = Facility::create([
-                    'name' => $facilityName,
-                    'area_id' => $areaId,
-                    'location_url' => $locationUrl,
-                    'user_id' => $user->id,
+            $role = $this->securityLayer->getRoleFromToken();
+            if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
+                $validatedRequest = $request->validate([
+                    'name' => 'required',
+                    'phone' => 'required|unique:users',
+                    'email' => 'nullable|email|unique:users',
+                    'numberOfFacilities' => 'required|integer',
+                    'facilityName' => 'required|array',
+                    'facilityName.*' => 'required|string',
+                    'systemTypeId' => 'required|array',
+                    'systemTypeId.*' => 'required|array',
+                    'systemTypeId.*.*' => 'required|integer',
+                    'areaId' => 'required|array',
+                    'areaId.*' => 'required|integer',
+                    'locationUrl' => 'nullable|array',
+                    'locationUrl.*' => 'nullable|url',
                 ]);
 
-                Log::info("Facility {$facility->name} added successfully");
+                $user = User::create([
+                    'name' => $validatedRequest['name'],
+                    'phone' => $validatedRequest['phone'],
+                    'email' => $validatedRequest['email'] ?? null,
+                    'password' => bcrypt('123456'),
+                    'role_id' => 3,
+                ]);
 
-                // Loop through systemTypeIds for this facility and create FacilitySystem entries
-                foreach ($systemTypeIds as $systemTypeId) {
-                    $facilitySystem = FacilitySystem::create([
-                        'facility_id' => $facility->id,
-                        'system_id' => $systemTypeId,
-                        'status' => 'any',
+                Log::info("User {$user->name} added successfully");
+
+                for ($i = 0; $i < $validatedRequest['numberOfFacilities']; $i++) {
+                    $facilityName = $validatedRequest['facilityName'][$i] ?? null;
+                    $systemTypeIds = $validatedRequest['systemTypeId'][$i] ?? [];
+                    $areaId = $validatedRequest['areaId'][$i] ?? null;
+                    $locationUrl = $validatedRequest['locationUrl'][$i] ?? null;
+
+                    if (!$facilityName || empty($systemTypeIds) || !$areaId) {
+                        continue;
+                    }
+
+                    $facility = Facility::create([
+                        'name' => $facilityName,
+                        'area_id' => $areaId,
+                        'location_url' => $locationUrl,
+                        'user_id' => $user->id,
                     ]);
 
-                    Log::info("Facility system {$facilitySystem->id} added successfully");
-                }
-            }
+                    Log::info("Facility {$facility->name} added successfully");
 
-            Log::info("User {$user->name} and facilities added successfully");
-            return response()->json(['message' => 'User and facilities added successfully'], 201);
+                    foreach ($systemTypeIds as $systemTypeId) {
+                        $facilitySystem = FacilitySystem::create([
+                            'facility_id' => $facility->id,
+                            'system_id' => $systemTypeId,
+                            'status' => 'any',
+                        ]);
+
+                        Log::info("Facility system {$facilitySystem->id} added successfully");
+                    }
+                }
+
+                Log::info("User {$user->name} and facilities added successfully");
+
+                $response = 'User and facilities added successfully';
+                $this->loggingService->addLog($request, $response);
+                return response()->json(['message' => $response], 201);
+            } else {
+                return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
+            }
         } catch (\Exception $e) {
+            $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
@@ -106,83 +129,95 @@ class UserController extends Controller
     public function updateUser(Request $request, $userId): JsonResponse
     {
         try {
-            // Validate input
-            $validatedRequest = $request->validate([
-                'name' => 'sometimes|required|string',
-                'phone' => 'sometimes|required|unique:users,phone,' . $userId, // Ignore current user's phone
-                'email' => 'sometimes|nullable|email|unique:users,email,' . $userId, // Ignore current user's email
-                'numberOfFacilities' => 'required|integer',
-                'facilityName' => 'required|array', // Ensures it's an array
-                'facilityName.*' => 'required|string', // Each item must be a string
-                'systemTypeId' => 'required|array', // Validate systemTypeId as an array
-                'systemTypeId.*' => 'required|array', // Each facility's systemTypeId should be an array
-                'systemTypeId.*.*' => 'required|integer', // Each systemTypeId in the nested array should be an integer
-                'areaId' => 'required|array',
-                'areaId.*' => 'required|integer',
-                'locationUrl' => 'nullable|array',
-                'locationUrl.*' => 'nullable|url',
-            ]);
-
-            // Fetch the user
-            $user = User::findOrFail($userId);
-
-            // Update user information
-            $user->update([
-                'name' => $validatedRequest['name'] ?? $user->name,
-                'phone' => $validatedRequest['phone'] ?? $user->phone,
-                'email' => $validatedRequest['email'] ?? $user->email,
-            ]);
-
-            Log::info("User {$user->name} updated successfully");
-
-            // Clear existing facilities and their systems
-            $user->facilities()->delete();
-
-            // Re-add facilities and their systems
-            for ($i = 0; $i < $validatedRequest['numberOfFacilities']; $i++) {
-                $facilityName = $validatedRequest['facilityName'][$i] ?? null;
-                $systemTypeIds = $validatedRequest['systemTypeId'][$i] ?? []; // Array of systemTypeId for this facility
-                $areaId = $validatedRequest['areaId'][$i] ?? null;
-                $locationUrl = $validatedRequest['locationUrl'][$i] ?? null;
-
-                if (!$facilityName || empty($systemTypeIds) || !$areaId) {
-                    continue; // Skip if required fields are missing
-                }
-
-                $facility = Facility::create([
-                    'name' => $facilityName,
-                    'area_id' => $areaId,
-                    'location_url' => $locationUrl,
-                    'user_id' => $user->id,
+            $role = $this->securityLayer->getRoleFromToken();
+            if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
+                $validatedRequest = $request->validate([
+                    'name' => 'sometimes|required|string',
+                    'phone' => 'sometimes|required|unique:users,phone,' . $userId,
+                    'email' => 'sometimes|nullable|email|unique:users,email,' . $userId,
+                    'numberOfFacilities' => 'required|integer',
+                    'facilityName' => 'required|array',
+                    'facilityName.*' => 'required|string',
+                    'systemTypeId' => 'required|array',
+                    'systemTypeId.*' => 'required|array',
+                    'systemTypeId.*.*' => 'required|integer',
+                    'areaId' => 'required|array',
+                    'areaId.*' => 'required|integer',
+                    'locationUrl' => 'nullable|array',
+                    'locationUrl.*' => 'nullable|url',
                 ]);
 
-                Log::info("Facility {$facility->name} updated/added successfully");
+                $user = User::findOrFail($userId);
 
-                // Loop through systemTypeIds for this facility and create FacilitySystem entries
-                foreach ($systemTypeIds as $systemTypeId) {
-                    $facilitySystem = FacilitySystem::create([
-                        'facility_id' => $facility->id,
-                        'system_id' => $systemTypeId,
-                        'status' => 'any',
+                $user->update([
+                    'name' => $validatedRequest['name'] ?? $user->name,
+                    'phone' => $validatedRequest['phone'] ?? $user->phone,
+                    'email' => $validatedRequest['email'] ?? $user->email,
+                ]);
+
+                Log::info("User {$user->name} updated successfully");
+
+                $user->facilities()->delete();
+
+                for ($i = 0; $i < $validatedRequest['numberOfFacilities']; $i++) {
+                    $facilityName = $validatedRequest['facilityName'][$i] ?? null;
+                    $systemTypeIds = $validatedRequest['systemTypeId'][$i] ?? [];
+                    $areaId = $validatedRequest['areaId'][$i] ?? null;
+                    $locationUrl = $validatedRequest['locationUrl'][$i] ?? null;
+
+                    if (!$facilityName || empty($systemTypeIds) || !$areaId) {
+                        continue;
+                    }
+
+                    $facility = Facility::create([
+                        'name' => $facilityName,
+                        'area_id' => $areaId,
+                        'location_url' => $locationUrl,
+                        'user_id' => $user->id,
                     ]);
 
-                    Log::info("Facility system {$facilitySystem->id} added successfully");
-                }
-            }
+                    Log::info("Facility {$facility->name} updated/added successfully");
 
-            Log::info("User {$user->name} and facilities updated successfully");
-            return response()->json(['message' => 'User and facilities updated successfully'], 200);
+                    foreach ($systemTypeIds as $systemTypeId) {
+                        $facilitySystem = FacilitySystem::create([
+                            'facility_id' => $facility->id,
+                            'system_id' => $systemTypeId,
+                            'status' => 'any',
+                        ]);
+
+                        Log::info("Facility system {$facilitySystem->id} added successfully");
+                    }
+                }
+
+                Log::info("User {$user->name} and facilities updated successfully");
+
+                $response = 'User and facilities updated successfully';
+                $this->loggingService->addLog($request, $response);
+                return response()->json(['message' => $response], 200);
+            } else {
+                return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
+            }
         } catch (\Exception $e) {
+            $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 
-    public function deleteUser($userId): JsonResponse
+    public function deleteUser(Request $request, $userId): JsonResponse
     {
-        $user = User::findOrFail($userId);
-        $user->destroy($userId);
-        Log::info("User {$user->name} deleted successfully");
-        return response()->json(['message' => 'User deleted successfully'], 200);
+        $role = $this->securityLayer->getRoleFromToken();
+        if ($role == UserRole::superAdmin->value) {
+            $user = User::findOrFail($userId);
+            $user->destroy($userId);
+
+            Log::info("User {$user->name} deleted successfully");
+
+            $response = 'User deleted successfully';
+            $this->loggingService->addLog($request, $response);
+            return response()->json(['message' => $response], 200);
+        } else {
+            return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
+        }
     }
 
     public function search(Request $request): JsonResponse

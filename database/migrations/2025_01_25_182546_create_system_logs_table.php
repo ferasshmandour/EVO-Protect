@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('system_logs', function (Blueprint $table) {
             $table->id();
-            $table->string('endpoint');
-            $table->string('body');
-            $table->string('response');
-            $table->string('ip');
+            $table->string('endpoint')->nullable();
+            $table->string('body')->nullable();
+            $table->string('response')->nullable();
+            $table->string('ip')->nullable();
             $table->timestamps();
         });
     }

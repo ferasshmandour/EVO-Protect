@@ -4,9 +4,12 @@ namespace App\Http\Controllers\API;
 
 use App\Enums\FacilitySystemStatus;
 use App\Enums\JoinRequestStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\DTO\FacilityResponse;
 use App\Http\DTO\JoinRequestResponse;
+use App\Http\Services\LoggingService;
+use App\Http\Services\SecurityLayer;
 use App\Models\Facility;
 use App\Models\FacilitySystem;
 use App\Models\JoinRequest;
@@ -17,131 +20,164 @@ use Illuminate\Support\Facades\Log;
 
 class JoinRequestController extends Controller
 {
-    public function getAllJoinRequests(): JsonResponse
+    private SecurityLayer $securityLayer;
+    private LoggingService $loggingService;
+
+    public function __construct(SecurityLayer $securityLayer, LoggingService $loggingService)
     {
-        $joinRequests = JoinRequest::where('status', JoinRequestStatus::pending)->get();
+        $this->securityLayer = $securityLayer;
+        $this->loggingService = $loggingService;
+    }
 
-        $responseList = [];
+    public function getAllJoinRequests(Request $request): JsonResponse
+    {
+        $role = $this->securityLayer->getRoleFromToken();
+        if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
+            $joinRequests = JoinRequest::where('status', JoinRequestStatus::pending)->get();
 
-        foreach ($joinRequests as $joinRequest) {
-            $user = User::where('id', $joinRequest->user_id)->first();
-            $numberOfFacilities = $user->facilities->count();
+            $responseList = [];
+            foreach ($joinRequests as $joinRequest) {
+                $user = User::where('id', $joinRequest->user_id)->first();
+                $numberOfFacilities = $user->facilities->count();
 
-            $facilities = [];
+                $facilities = [];
+                foreach ($user->facilities as $facility) {
+                    $facilityResponse = new FacilityResponse($facility->id, $facility->name, $facility->user->id, $facility->user->name, $facility->area->id, $facility->area->name, $facility->location_url);
+                    $facilities[] = $facilityResponse;
+                }
 
-            foreach ($user->facilities as $facility) {
-                $facilityResponse = new FacilityResponse($facility->id, $facility->name, $facility->user->id, $facility->user->name, $facility->area->id, $facility->area->name, $facility->location_url);
-                $facilities[] = $facilityResponse;
+                $joinRequestResponse = new JoinRequestResponse($joinRequest->id, $joinRequest->status, $user->id, $user->name, $user->phone, $user->email, $numberOfFacilities, $facilities);
+                $responseList[] = $joinRequestResponse;
             }
 
-            $joinRequestResponse = new JoinRequestResponse($joinRequest->id, $joinRequest->status, $user->id, $user->name, $user->phone, $user->email, $numberOfFacilities, $facilities);
-            $responseList[] = $joinRequestResponse;
+            $this->loggingService->addLog($request, null);
+            return response()->json($responseList);
+        } else {
+            return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
         }
-
-        return response()->json($responseList);
     }
 
     public function makeJoinRequest(Request $request): JsonResponse
     {
         try {
-            $validatedRequest = $request->validate([
-                'name' => 'required',
-                'phone' => 'required|unique:users',
-                'numberOfFacilities' => 'required|integer',
-                'facilityName' => 'required|array', // Ensures it's an array
-                'facilityName.*' => 'required|string', // Each item must be a string
-                'systemTypeId' => 'required|array', // Validate systemTypeId as an array
-                'systemTypeId.*' => 'required|array', // Each facility's systemTypeId should be an array
-                'systemTypeId.*.*' => 'required|integer', // Each systemTypeId in the nested array should be an integer
-                'areaId' => 'required|array',
-                'areaId.*' => 'required|integer',
-                'locationUrl' => 'nullable|array',
-                'locationUrl.*' => 'nullable|url',
-            ]);
-
-            $user = User::create([
-                'name' => $validatedRequest['name'],
-                'phone' => $validatedRequest['phone'],
-                'email' => $validatedRequest['name'] . '@gmail.com',
-                'password' => bcrypt('123456'),
-                'role_id' => 3, // replace this with real one
-            ]);
-
-            Log::info("User {$user->name} asked to join");
-
-            // Loop through facilities and create them along with their systems
-            for ($i = 0; $i < $validatedRequest['numberOfFacilities']; $i++) {
-                $facilityName = $validatedRequest['facilityName'][$i] ?? null;
-                $systemTypeIds = $validatedRequest['systemTypeId'][$i] ?? []; // Array of systemTypeId for this facility
-                $areaId = $validatedRequest['areaId'][$i] ?? null;
-                $locationUrl = $validatedRequest['locationUrl'][$i] ?? null;
-
-                if (!$facilityName || empty($systemTypeIds) || !$areaId) {
-                    continue; // Skip if required fields are missing
-                }
-
-                $facility = Facility::create([
-                    'name' => $facilityName,
-                    'area_id' => $areaId,
-                    'location_url' => $locationUrl,
-                    'user_id' => $user->id,
+            $role = $this->securityLayer->getRoleFromToken();
+            if ($role == UserRole::user->value) {
+                $validatedRequest = $request->validate([
+                    'name' => 'required',
+                    'phone' => 'required|unique:users',
+                    'numberOfFacilities' => 'required|integer',
+                    'facilityName' => 'required|array',
+                    'facilityName.*' => 'required|string',
+                    'systemTypeId' => 'required|array',
+                    'systemTypeId.*' => 'required|array',
+                    'systemTypeId.*.*' => 'required|integer',
+                    'areaId' => 'required|array',
+                    'areaId.*' => 'required|integer',
+                    'locationUrl' => 'nullable|array',
+                    'locationUrl.*' => 'nullable|url',
                 ]);
 
-                Log::info("Facility {$facility->name} added successfully");
+                $user = User::create([
+                    'name' => $validatedRequest['name'],
+                    'phone' => $validatedRequest['phone'],
+                    'email' => $validatedRequest['name'] . '@gmail.com',
+                    'password' => bcrypt('123456'),
+                    'role_id' => 3,
+                ]);
 
-                // Loop through systemTypeIds for this facility and create FacilitySystem entries
-                foreach ($systemTypeIds as $systemTypeId) {
-                    $facilitySystem = FacilitySystem::create([
-                        'facility_id' => $facility->id,
-                        'system_id' => $systemTypeId,
-                        'status' => FacilitySystemStatus::off,
+                Log::info("User {$user->name} asked to join");
+
+                for ($i = 0; $i < $validatedRequest['numberOfFacilities']; $i++) {
+                    $facilityName = $validatedRequest['facilityName'][$i] ?? null;
+                    $systemTypeIds = $validatedRequest['systemTypeId'][$i] ?? [];
+                    $areaId = $validatedRequest['areaId'][$i] ?? null;
+                    $locationUrl = $validatedRequest['locationUrl'][$i] ?? null;
+
+                    if (!$facilityName || empty($systemTypeIds) || !$areaId) {
+                        continue;
+                    }
+
+                    $facility = Facility::create([
+                        'name' => $facilityName,
+                        'area_id' => $areaId,
+                        'location_url' => $locationUrl,
+                        'user_id' => $user->id,
                     ]);
 
-                    Log::info("Facility system {$facilitySystem->id} added successfully");
+                    Log::info("Facility {$facility->name} added successfully");
+
+                    foreach ($systemTypeIds as $systemTypeId) {
+                        $facilitySystem = FacilitySystem::create([
+                            'facility_id' => $facility->id,
+                            'system_id' => $systemTypeId,
+                            'status' => FacilitySystemStatus::off,
+                        ]);
+
+                        Log::info("Facility system {$facilitySystem->id} added successfully");
+                    }
                 }
+
+                $joinRequest = JoinRequest::create([
+                    'user_id' => $user->id,
+                    'status' => JoinRequestStatus::pending,
+                ]);
+
+                Log::info("Join {$joinRequest->id} request added successfully");
+
+                $response = 'Join request added successfully';
+                $this->loggingService->addLog($request, $response);
+                return response()->json(['message' => $response]);
+            } else {
+                return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
             }
-
-            $joinRequest = JoinRequest::create([
-                'user_id' => $user->id,
-                'status' => JoinRequestStatus::pending,
-            ]);
-
-            Log::info("Join {$joinRequest->id} request added successfully");
-
-            return response()->json(['message' => 'Join request added successfully']);
-
         } catch (\Exception $e) {
+            $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 
-    public function approveJoinRequest($joinRequestId): JsonResponse
+    public function approveJoinRequest(Request $request, $joinRequestId): JsonResponse
     {
         try {
-            $joinRequest = JoinRequest::where('id', $joinRequestId)->first();
-            $joinRequest->update([
-                'status' => JoinRequestStatus::approved,
-            ]);
+            $role = $this->securityLayer->getRoleFromToken();
+            if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
+                $joinRequest = JoinRequest::where('id', $joinRequestId)->first();
+                $joinRequest->update([
+                    'status' => JoinRequestStatus::approved,
+                ]);
 
-            Log::info("Approved join request {$joinRequest->id} successfully");
+                Log::info("Approved join request {$joinRequest->id} successfully");
 
-            return response()->json(['message' => 'Approved join request successfully']);
+                $response = 'Join request approved successfully';
+                $this->loggingService->addLog($request, $response);
+                return response()->json(['message' => $response]);
+            } else {
+                return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
+            }
         } catch (\Exception $e) {
+            $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 
-    public function cancelJoinRequest($joinRequestId): JsonResponse
+    public function cancelJoinRequest(Request $request, $joinRequestId): JsonResponse
     {
         try {
-            $joinRequest = JoinRequest::where('id', $joinRequestId)->first();
-            $joinRequest->update([
-                'status' => JoinRequestStatus::canceled,
-            ]);
+            $role = $this->securityLayer->getRoleFromToken();
+            if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
+                $joinRequest = JoinRequest::where('id', $joinRequestId)->first();
+                $joinRequest->update([
+                    'status' => JoinRequestStatus::canceled,
+                ]);
 
-            Log::info("Canceled join request {$joinRequest->id} successfully");
+                Log::info("Canceled join request {$joinRequest->id} successfully");
 
-            return response()->json(['message' => 'Canceled join request successfully']);
+                $response = 'Join request canceled successfully';
+                $this->loggingService->addLog($request, $response);
+                return response()->json(['message' => $response]);
+            } else {
+                return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
+            }
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }

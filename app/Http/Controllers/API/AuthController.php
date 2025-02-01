@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Services\LoggingService;
+use App\Http\Services\SecurityLayer;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +14,13 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+    private LoggingService $loggingService;
+
+    public function __construct(LoggingService $loggingService)
+    {
+        $this->loggingService = $loggingService;
+    }
+
     public function register(Request $request): JsonResponse
     {
         try {
@@ -36,8 +45,12 @@ class AuthController extends Controller
             $token = $user->createToken('MyApp')->plainTextToken;
 
             Log::info("User {$user->name} registered successfully");
-            return response()->json(['token' => $token, 'message' => 'User registered successfully'], 201);
+
+            $response = 'User registered successfully';
+            $this->loggingService->addLog($request, $response);
+            return response()->json(['token' => $token, 'message' => $response], 201);
         } catch (\Exception $e) {
+            $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -50,11 +63,15 @@ class AuthController extends Controller
                 $token = $user->createToken('MyApp')->plainTextToken;
 
                 Log::info("User {$user->name} logged in successfully");
-                return response()->json(['token' => $token, 'message' => 'User logged in successfully'], 200);
+
+                $response = 'User logged in successfully';
+                $this->loggingService->addLog($request, $response);
+                return response()->json(['token' => $token, 'message' => $response], 200);
             } else {
                 return response()->json(['error' => 'Invalid credentials'], 422);
             }
         } catch (\Exception $e) {
+            $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -70,12 +87,16 @@ class AuthController extends Controller
             if ($user->currentAccessToken()) {
                 $user->currentAccessToken()->delete();
                 Log::info("User {$user->name} logged out successfully");
-                return response()->json(['message' => 'User logged out successfully'], 200);
+
+                $response = 'User logged out successfully';
+                $this->loggingService->addLog($request, $response);
+                return response()->json(['message' => $response], 200);
             }
 
             return response()->json(['error' => 'No active token found'], 401);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Something went wrong'], 500);
+            $this->loggingService->addLog($request, $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }
