@@ -24,13 +24,13 @@ class UserController extends Controller
             ->where('j.status', '=', JoinRequestStatus::approved)
             ->get();
 
-        return response()->json($users);
+        return response()->json($users, 200);
     }
 
     public function getUserById($userId): JsonResponse
     {
         $user = User::where('id', $userId)->first();
-        return response()->json($user);
+        return response()->json($user, 200);
     }
 
     public function addUser(Request $request): JsonResponse
@@ -97,7 +97,7 @@ class UserController extends Controller
             }
 
             Log::info("User and facilities added successfully");
-            return response()->json(['message' => 'User and facilities added successfully']);
+            return response()->json(['message' => 'User and facilities added successfully'], 201);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -171,7 +171,7 @@ class UserController extends Controller
             }
 
             Log::info("User and facilities updated successfully");
-            return response()->json(['message' => 'User and facilities updated successfully']);
+            return response()->json(['message' => 'User and facilities updated successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -181,7 +181,7 @@ class UserController extends Controller
     {
         User::destroy($userId);
         Log::info("User deleted successfully");
-        return response()->json(['message' => 'User deleted successfully']);
+        return response()->json(['message' => 'User deleted successfully'], 200);
     }
 
     public function search(Request $request): JsonResponse
@@ -191,7 +191,7 @@ class UserController extends Controller
                 ->where('name', 'like', '%' . $request->username . '%')
                 ->where('role_id', '=', $request->roleId)
                 ->get();
-            return response()->json($sql);
+            return response()->json($sql, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
