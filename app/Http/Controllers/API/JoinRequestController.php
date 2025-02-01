@@ -13,8 +13,6 @@ use App\Models\JoinRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class JoinRequestController extends Controller
@@ -66,10 +64,10 @@ class JoinRequestController extends Controller
                 'phone' => $validatedRequest['phone'],
                 'email' => $validatedRequest['name'] . '@gmail.com',
                 'password' => bcrypt('123456'),
-                'role_id' => 3,
+                'role_id' => 3, // replace this with real one
             ]);
 
-            Log::info("User asked to join " . $user->name);
+            Log::info("User {$user->name} asked to join");
 
             // Loop through facilities and create them along with their systems
             for ($i = 0; $i < $validatedRequest['numberOfFacilities']; $i++) {
@@ -89,7 +87,7 @@ class JoinRequestController extends Controller
                     'user_id' => $user->id,
                 ]);
 
-                Log::info("Facility added " . $facility->name);
+                Log::info("Facility {$facility->name} added successfully");
 
                 // Loop through systemTypeIds for this facility and create FacilitySystem entries
                 foreach ($systemTypeIds as $systemTypeId) {
@@ -99,7 +97,7 @@ class JoinRequestController extends Controller
                         'status' => FacilitySystemStatus::off,
                     ]);
 
-                    Log::info("Facility system added " . $facilitySystem->id);
+                    Log::info("Facility system {$facilitySystem->id} added successfully");
                 }
             }
 
@@ -108,7 +106,7 @@ class JoinRequestController extends Controller
                 'status' => JoinRequestStatus::pending,
             ]);
 
-            Log::info("Join request added " . $joinRequest->id);
+            Log::info("Join {$joinRequest->id} request added successfully");
 
             return response()->json(['message' => 'Join request added successfully']);
 
@@ -125,7 +123,7 @@ class JoinRequestController extends Controller
                 'status' => JoinRequestStatus::approved,
             ]);
 
-            Log::info("Approved join request " . $joinRequest->id);
+            Log::info("Approved join request {$joinRequest->id} successfully");
 
             return response()->json(['message' => 'Approved join request successfully']);
         } catch (\Exception $e) {
@@ -141,7 +139,7 @@ class JoinRequestController extends Controller
                 'status' => JoinRequestStatus::canceled,
             ]);
 
-            Log::info("Canceled join request " . $joinRequest->id);
+            Log::info("Canceled join request {$joinRequest->id} successfully");
 
             return response()->json(['message' => 'Canceled join request successfully']);
         } catch (\Exception $e) {

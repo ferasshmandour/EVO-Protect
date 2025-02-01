@@ -62,7 +62,7 @@ class UserController extends Controller
                 'role_id' => 3,
             ]);
 
-            Log::info("User added " . $user->name);
+            Log::info("User {$user->name} added successfully");
 
             // Loop through facilities and create them along with their systems
             for ($i = 0; $i < $validatedRequest['numberOfFacilities']; $i++) {
@@ -82,7 +82,7 @@ class UserController extends Controller
                     'user_id' => $user->id,
                 ]);
 
-                Log::info("Facility added " . $facility->name);
+                Log::info("Facility {$facility->name} added successfully");
 
                 // Loop through systemTypeIds for this facility and create FacilitySystem entries
                 foreach ($systemTypeIds as $systemTypeId) {
@@ -92,11 +92,11 @@ class UserController extends Controller
                         'status' => 'any',
                     ]);
 
-                    Log::info("Facility system added " . $facilitySystem->id);
+                    Log::info("Facility system {$facilitySystem->id} added successfully");
                 }
             }
 
-            Log::info("User and facilities added successfully");
+            Log::info("User {$user->name} and facilities added successfully");
             return response()->json(['message' => 'User and facilities added successfully'], 201);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
@@ -133,7 +133,7 @@ class UserController extends Controller
                 'email' => $validatedRequest['email'] ?? $user->email,
             ]);
 
-            Log::info("User updated " . $user->name);
+            Log::info("User {$user->name} updated successfully");
 
             // Clear existing facilities and their systems
             $user->facilities()->delete();
@@ -156,7 +156,7 @@ class UserController extends Controller
                     'user_id' => $user->id,
                 ]);
 
-                Log::info("Facility updated/added " . $facility->name);
+                Log::info("Facility {$facility->name} updated/added successfully");
 
                 // Loop through systemTypeIds for this facility and create FacilitySystem entries
                 foreach ($systemTypeIds as $systemTypeId) {
@@ -166,11 +166,11 @@ class UserController extends Controller
                         'status' => 'any',
                     ]);
 
-                    Log::info("Facility system added " . $facilitySystem->id);
+                    Log::info("Facility system {$facilitySystem->id} added successfully");
                 }
             }
 
-            Log::info("User and facilities updated successfully");
+            Log::info("User {$user->name} and facilities updated successfully");
             return response()->json(['message' => 'User and facilities updated successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
@@ -179,8 +179,9 @@ class UserController extends Controller
 
     public function deleteUser($userId): JsonResponse
     {
-        User::destroy($userId);
-        Log::info("User deleted successfully");
+        $user = User::findOrFail($userId);
+        $user->destroy($userId);
+        Log::info("User {$user->name} deleted successfully");
         return response()->json(['message' => 'User deleted successfully'], 200);
     }
 

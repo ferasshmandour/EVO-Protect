@@ -33,9 +33,7 @@ class AreaController extends Controller
                 'name' => $validatedRequest['name'],
             ]);
 
-            Log::info("Area added " . $area->name);
-
-            Log::info("Area added successfully");
+            Log::info("Area {$area->name} added successfully");
             return response()->json(['message' => 'Area added successfully'], 201);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
@@ -54,7 +52,7 @@ class AreaController extends Controller
                 'name' => $validatedRequest['name'] ?? $area->name,
             ]);
 
-            Log::info("Area updated " . $area->name);
+            Log::info("Area {$area->name} updated successfully");
             Log::info("Area updated successfully");
             return response()->json(['message' => 'Area updated successfully'], 200);
         } catch (\Exception $e) {
@@ -64,8 +62,10 @@ class AreaController extends Controller
 
     public function deleteArea($areaId): JsonResponse
     {
-        Area::destroy($areaId);
-        Log::info("Area deleted successfully");
+        $area = Area::findOrFail($areaId);
+        $area->destroy($areaId);
+
+        Log::info("Area {$area->name} deleted successfully");
         return response()->json(['message' => 'Area deleted successfully'], 200);
     }
 }

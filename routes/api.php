@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\AreaController;
 use App\Http\Controllers\API\EvoSystemController;
+use App\Http\Controllers\API\FeedBackController;
 use App\Http\Controllers\API\JoinRequestController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Http\Request;
@@ -35,3 +36,8 @@ Route::get('/getEvoSystemById/{systemId}', [EvoSystemController::class, 'getEvoS
 Route::post('/addEvoSystem', [EvoSystemController::class, 'addEvoSystem']);
 Route::post('/updateEvoSystem/{systemId}', [EvoSystemController::class, 'updateEvoSystem']);
 Route::delete('/deleteEvoSystem/{systemId}', [EvoSystemController::class, 'deleteEvoSystem']);
+
+// FeedBack APIs
+Route::get('/getAllUserFeedBacks', [FeedBackController::class, 'getAllUserFeedBacks']);
+Route::post('/sendFeedback', [FeedBackController::class, 'sendFeedback']);
+Route::post('/deleteFeedback/{feedbackId}', [FeedBackController::class, 'deleteFeedback']);
