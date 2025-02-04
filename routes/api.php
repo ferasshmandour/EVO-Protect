@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AdminController;
 use App\Http\Controllers\API\AreaController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\EvoSystemController;
+use App\Http\Controllers\API\FacilityController;
 use App\Http\Controllers\API\FeedBackController;
 use App\Http\Controllers\API\JoinRequestController;
 use App\Http\Controllers\API\MaintenanceRequestController;
@@ -28,6 +29,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/updateUser/{userId}', [UserController::class, 'updateUser']);
     Route::delete('/deleteUser/{userId}', [UserController::class, 'deleteUser']);
     Route::get('/search', [UserController::class, 'search']);
+    Route::get('/getUserProfile', [UserController::class, 'getUserProfile']);
+    Route::post('/updateUserProfile', [UserController::class, 'updateUserProfile']);
 
     // Admin APIs
     Route::get('/getAllAdmins', [AdminController::class, 'getAllAdmins']);
@@ -70,6 +73,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/getAllMaintenanceRequests', [MaintenanceRequestController::class, 'getAllMaintenanceRequests']);
     Route::post('/sentMaintenanceRequest', [MaintenanceRequestController::class, 'sentMaintenanceRequest']);
     Route::post('/deleteMaintenanceRequest/{maintenanceRequestId}', [MaintenanceRequestController::class, 'deleteMaintenanceRequest']);
+
+
 });
 
 Route::get('/clearCache', [UserController::class, 'clearCache']);
+
+
+// Facility APIs
+Route::get('/getAllFacilities', [FacilityController::class, 'getAllFacilities']);

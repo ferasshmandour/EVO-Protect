@@ -257,6 +257,46 @@ class UserController extends Controller
         }
     }
 
+    public function getUserProfile(Request $request): JsonResponse
+    {
+        $userId = $this->securityLayer->getUserIdFromToken();
+
+        $user = DB::table('users', 'u')
+            ->select('u.id as userId', 'u.name', 'u.phone')
+            ->where('id', $userId)
+            ->first();
+
+        $this->loggingService->addLog($request, null);
+        return response()->json($user, 200);
+    }
+
+    public function updateUserProfile(Request $request): JsonResponse
+    {
+        try {
+            $userId = $this->securityLayer->getUserIdFromToken();
+            $validatedRequest = $request->validate([
+                'name' => 'sometimes|required|string',
+                'phone' => 'sometimes|required|unique:users,phone,' . $userId,
+                'password' => 'sometimes|required|string|min:6',
+            ]);
+
+            $user = User::where('id', $userId)->first();
+            $user->update([
+                'name' => $validatedRequest['name'],
+                'phone' => $validatedRequest['phone'],
+                'password' => bcrypt($validatedRequest['password']),
+            ]);
+
+            Log::info("User {$user->name} updated his profile successfully");
+
+            $response = 'User profile updated successfully';
+            $this->loggingService->addLog($request, $response);
+            return response()->json(['message' => $response], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
     public function clearCache(): string
     {
         Artisan::call('cache:clear');
