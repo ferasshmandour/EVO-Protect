@@ -61,7 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/updateEvoSystem/{systemId}', [EvoSystemController::class, 'updateEvoSystem']);
     Route::delete('/deleteEvoSystem/{systemId}', [EvoSystemController::class, 'deleteEvoSystem']);
 
-    // FeedBack APIs
+    // Feedback APIs
     Route::get('/getAllUserFeedBacks', [FeedBackController::class, 'getAllUserFeedBacks']);
     Route::post('/sendFeedback', [FeedBackController::class, 'sendFeedback']);
     Route::post('/deleteFeedback/{feedbackId}', [FeedBackController::class, 'deleteFeedback']);

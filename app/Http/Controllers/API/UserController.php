@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Enums\JoinRequestStatus;
+use App\Enums\AddedBy;
+use App\Enums\FacilitySystemStatus;
 use App\Enums\UserRole;
+use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Services\LoggingService;
 use App\Http\Services\SecurityLayer;
 use App\Models\Facility;
 use App\Models\FacilitySystem;
+use App\Models\JoinRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,11 +35,18 @@ class UserController extends Controller
         $role = $this->securityLayer->getRoleFromToken();
         if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
             $users = DB::table('users', 'u')
-                ->join('join_requests as j', 'u.id', '=', 'j.user_id')
                 ->join('roles as r', 'r.id', '=', 'u.role_id')
-                ->select(['u.id as userId', 'u.name as username', 'u.phone', 'u.email', 'r.name as role'])
-                ->where('j.status', '=', JoinRequestStatus::approved)
-                ->where('r.name', '=', UserRole::user)
+                ->select([
+                    'u.id as userId',
+                    'u.name as username',
+                    'u.phone',
+                    'u.email',
+                    'r.name as role',
+                    'u.status',
+                    DB::raw("case when u.is_client = 1 then 'YES' else 'NO' end as isClient"),
+                    'u.added_by as addedBy',
+                    'u.created_at as createdAt'
+                ])->where('r.name', '=', UserRole::user)
                 ->get();
 
             $this->loggingService->addLog($request, null);
@@ -55,6 +65,7 @@ class UserController extends Controller
 
     public function addUser(Request $request): JsonResponse
     {
+        DB::beginTransaction();
         try {
             $role = $this->securityLayer->getRoleFromToken();
             if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
@@ -80,6 +91,9 @@ class UserController extends Controller
                     'email' => $validatedRequest['email'] ?? null,
                     'password' => bcrypt('123456'),
                     'role_id' => 3,
+                    'status' => UserStatus::active,
+                    'added_by' => AddedBy::dashboard,
+                    'is_client' => true,
                 ]);
 
                 Log::info("User {$user->name} added successfully");
@@ -107,13 +121,16 @@ class UserController extends Controller
                         $facilitySystem = FacilitySystem::create([
                             'facility_id' => $facility->id,
                             'system_id' => $systemTypeId,
-                            'status' => 'any',
+                            'status' => FacilitySystemStatus::off,
                         ]);
 
                         Log::info("Facility system {$facilitySystem->id} added successfully");
                     }
                 }
 
+                DB::commit();
+
+                Log::info("Admin add user successfully");
                 Log::info("User {$user->name} and facilities added successfully");
 
                 $response = 'User and facilities added successfully';
@@ -123,6 +140,7 @@ class UserController extends Controller
                 return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -130,6 +148,7 @@ class UserController extends Controller
 
     public function updateUser(Request $request, $userId): JsonResponse
     {
+        DB::beginTransaction();
         try {
             $role = $this->securityLayer->getRoleFromToken();
             if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
@@ -184,12 +203,14 @@ class UserController extends Controller
                         $facilitySystem = FacilitySystem::create([
                             'facility_id' => $facility->id,
                             'system_id' => $systemTypeId,
-                            'status' => 'any',
+                            'status' => FacilitySystemStatus::off,
                         ]);
 
                         Log::info("Facility system {$facilitySystem->id} added successfully");
                     }
                 }
+
+                DB::commit();
 
                 Log::info("User {$user->name} and facilities updated successfully");
 
@@ -200,6 +221,7 @@ class UserController extends Controller
                 return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
         }

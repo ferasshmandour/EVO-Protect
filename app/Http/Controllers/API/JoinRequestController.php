@@ -16,6 +16,7 @@ use App\Models\JoinRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class JoinRequestController extends Controller
@@ -46,7 +47,7 @@ class JoinRequestController extends Controller
                     $facilities[] = $facilityResponse;
                 }
 
-                $joinRequestResponse = new JoinRequestResponse($joinRequest->id, $joinRequest->status, $user->id, $user->name, $user->phone, $user->email, $numberOfFacilities, $facilities);
+                $joinRequestResponse = new JoinRequestResponse($joinRequest->id, $joinRequest->status, $user->id, $user->name, $user->phone, $user->email, $joinRequest->added_by, $numberOfFacilities, $facilities);
                 $responseList[] = $joinRequestResponse;
             }
 
@@ -59,6 +60,7 @@ class JoinRequestController extends Controller
 
     public function makeJoinRequest(Request $request): JsonResponse
     {
+        DB::beginTransaction();
         try {
             $role = $this->securityLayer->getRoleFromToken();
             if ($role == UserRole::user->value) {
@@ -77,15 +79,12 @@ class JoinRequestController extends Controller
                     'locationUrl.*' => 'nullable|url',
                 ]);
 
-                $user = User::create([
-                    'name' => $validatedRequest['name'],
-                    'phone' => $validatedRequest['phone'],
-                    'email' => $validatedRequest['name'] . '@gmail.com',
-                    'password' => bcrypt('123456'),
-                    'role_id' => 3,
+                $userId = $this->securityLayer->getUserIdFromToken();
+                $user = User::where('id', $userId)->first();
+                $user->update([
+                    'phone' => $validatedRequest['phone'] ?? null,
+                    'is_client' => true,
                 ]);
-
-                Log::info("User {$user->name} asked to join");
 
                 for ($i = 0; $i < $validatedRequest['numberOfFacilities']; $i++) {
                     $facilityName = $validatedRequest['facilityName'][$i] ?? null;
@@ -122,6 +121,9 @@ class JoinRequestController extends Controller
                     'status' => JoinRequestStatus::pending,
                 ]);
 
+                DB::commit();
+
+                Log::info("User {$user->name} asked to join");
                 Log::info("Join {$joinRequest->id} request added successfully");
 
                 $response = 'Join request added successfully';
@@ -131,6 +133,7 @@ class JoinRequestController extends Controller
                 return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -142,6 +145,11 @@ class JoinRequestController extends Controller
             $role = $this->securityLayer->getRoleFromToken();
             if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
                 $joinRequest = JoinRequest::where('id', $joinRequestId)->first();
+
+                if ($joinRequest->status == JoinRequestStatus::approved->value) {
+                    return response()->json(['message' => 'The join request is already approved'], 400);
+                }
+
                 $joinRequest->update([
                     'status' => JoinRequestStatus::approved,
                 ]);
@@ -166,6 +174,11 @@ class JoinRequestController extends Controller
             $role = $this->securityLayer->getRoleFromToken();
             if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
                 $joinRequest = JoinRequest::where('id', $joinRequestId)->first();
+
+                if ($joinRequest->status == JoinRequestStatus::canceled->value) {
+                    return response()->json(['message' => 'The join request is already canceled'], 400);
+                }
+
                 $joinRequest->update([
                     'status' => JoinRequestStatus::canceled,
                 ]);

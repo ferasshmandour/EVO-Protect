@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Enums\AddedBy;
+use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Services\LoggingService;
-use App\Http\Services\SecurityLayer;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,6 +42,9 @@ class AuthController extends Controller
                 'email' => $input['email'],
                 'password' => bcrypt($input['password']),
                 'role_id' => 3,
+                'status' => UserStatus::active,
+                'added_by' => AddedBy::mobile,
+                'is_client' => false,
             ]);
             $token = $user->createToken('MyApp')->plainTextToken;
 

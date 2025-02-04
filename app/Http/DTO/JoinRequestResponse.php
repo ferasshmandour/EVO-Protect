@@ -10,10 +10,11 @@ class JoinRequestResponse implements \JsonSerializable
     private ?string $username;
     private ?string $phone;
     private ?string $email;
+    private ?string $addedBy;
     private ?int $numberOfFacilities;
     private array $facilities;
 
-    public function __construct($id, $status, $userId, $username, $phone, $email, $numberOfFacilities, $facilities)
+    public function __construct($id, $status, $userId, $username, $phone, $email, $addedBy, $numberOfFacilities, $facilities)
     {
         $this->id = $id;
         $this->status = $status;
@@ -21,6 +22,7 @@ class JoinRequestResponse implements \JsonSerializable
         $this->username = $username;
         $this->phone = $phone;
         $this->email = $email;
+        $this->addedBy = $addedBy;
         $this->numberOfFacilities = $numberOfFacilities;
         $this->facilities = $facilities;
     }
@@ -34,6 +36,7 @@ class JoinRequestResponse implements \JsonSerializable
             'username' => $this->username,
             'phone' => $this->phone,
             'email' => $this->email,
+            'addedBy' => $this->addedBy,
             'numberOfFacilities' => $this->numberOfFacilities,
             'facilities' => $this->facilities
         ];
