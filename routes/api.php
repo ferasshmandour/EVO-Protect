@@ -74,11 +74,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/sentMaintenanceRequest', [MaintenanceRequestController::class, 'sentMaintenanceRequest']);
     Route::post('/deleteMaintenanceRequest/{maintenanceRequestId}', [MaintenanceRequestController::class, 'deleteMaintenanceRequest']);
 
-
+    // Facility APIs
+    Route::get('/getAllFacilities', [FacilityController::class, 'getAllFacilities']);
+    Route::get('/getFacilityById/{facilityId}', [FacilityController::class, 'getFacilityById']);
+    Route::post('/turnOffFacility/{facilityId}', [FacilityController::class, 'turnOffFacility']);
+    Route::post('/turnOnFacility/{facilityId}', [FacilityController::class, 'turnOnFacility']);
 });
 
 Route::get('/clearCache', [UserController::class, 'clearCache']);
-
-
-// Facility APIs
-Route::get('/getAllFacilities', [FacilityController::class, 'getAllFacilities']);

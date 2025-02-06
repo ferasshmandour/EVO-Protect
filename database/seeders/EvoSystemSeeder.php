@@ -14,19 +14,19 @@ class EvoSystemSeeder extends Seeder
     public function run(): void
     {
         EvoSystem::create([
-            'name' => 'First system',
+            'name' => 'Fire system',
             'devices' => 'test test',
             'description' => 'test test',
         ]);
 
         EvoSystem::create([
-            'name' => 'Second system',
+            'name' => 'Energy Saving system',
             'devices' => 'test test',
             'description' => 'test test',
         ]);
 
         EvoSystem::create([
-            'name' => 'Third system',
+            'name' => 'Protection system',
             'devices' => 'test test',
             'description' => 'test test',
         ]);
