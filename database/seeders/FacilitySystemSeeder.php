@@ -18,18 +18,21 @@ class FacilitySystemSeeder extends Seeder
             'facility_id' => 1,
             'system_id' => 1,
             'status' => FacilitySystemStatus::off,
+            'notification_status' => FacilitySystemStatus::off,
         ]);
 
         FacilitySystem::create([
             'facility_id' => 1,
             'system_id' => 2,
             'status' => FacilitySystemStatus::off,
+            'notification_status' => FacilitySystemStatus::off,
         ]);
 
         FacilitySystem::create([
             'facility_id' => 1,
             'system_id' => 3,
             'status' => FacilitySystemStatus::off,
+            'notification_status' => FacilitySystemStatus::off,
         ]);
     }
 }

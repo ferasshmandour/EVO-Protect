@@ -6,8 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -18,6 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(Facility::class, 'facility_id')->constrained()->onDelete('cascade');
             $table->foreignIdFor(EvoSystem::class, 'system_id')->constrained()->onDelete('cascade');
             $table->string('status');
+            $table->string('notification_status');
             $table->timestamps();
         });
     }

@@ -11,7 +11,6 @@ use App\Http\Services\LoggingService;
 use App\Http\Services\SecurityLayer;
 use App\Models\Facility;
 use App\Models\FacilitySystem;
-use App\Models\JoinRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -122,6 +121,7 @@ class UserController extends Controller
                             'facility_id' => $facility->id,
                             'system_id' => $systemTypeId,
                             'status' => FacilitySystemStatus::off,
+                            'notification_status' => FacilitySystemStatus::off,
                         ]);
 
                         Log::info("Facility system {$facilitySystem->id} added successfully");
@@ -204,6 +204,7 @@ class UserController extends Controller
                             'facility_id' => $facility->id,
                             'system_id' => $systemTypeId,
                             'status' => FacilitySystemStatus::off,
+                            'notification_status' => FacilitySystemStatus::off,
                         ]);
 
                         Log::info("Facility system {$facilitySystem->id} added successfully");

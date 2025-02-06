@@ -5,13 +5,16 @@ namespace App\Http\Controllers\API;
 use App\Enums\FacilitySystemStatus;
 use App\Http\Controllers\Controller;
 use App\Http\DTO\FacilityAndSystemResponse;
+use App\Http\DTO\FacilityValueResponse;
 use App\Http\Services\LoggingService;
 use App\Http\Services\SecurityLayer;
 use App\Models\Facility;
+use App\Models\SystemValue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class FacilityController extends Controller
 {
@@ -47,15 +50,35 @@ class FacilityController extends Controller
 
     public function getFacilityById(Request $request, $facilityId): JsonResponse
     {
-        $facility = DB::table('facilities', 'f')
+        $facilities = DB::table('facilities', 'f')
             ->join('facility_systems as fs', 'fs.facility_id', '=', 'f.id')
             ->join('evo_systems as s', 's.id', '=', 'fs.system_id')
-            ->select('f.id as facilityId', 'f.name as facilityName', 'f.user_id', 'f.area_id', 'f.location_url', 's.id as systemId', 's.name as systemName')
+            ->select('f.id as facilityId', 'f.name as facilityName', 's.id as systemId', 's.name as systemName')
             ->where('f.id', $facilityId)
             ->get();
 
+        $responseList = [];
+        foreach ($facilities as $facility) {
+            $systemValues = SystemValue::where(['facility_id' => $facility->facilityId, 'system_id' => $facility->systemId])->first();
+            if (Str::contains($systemValues->system->name, 'fire', true)) {
+                $values = [];
+                $values[] = ['temperature' => $systemValues->temperature, 'smoke' => $systemValues->smoke, 'horn' => $systemValues->horn];
+                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->systemId, $facility->systemName, $systemValues->status, $values);
+            }
+            if (Str::contains($systemValues->system->name, 'energy', true)) {
+                $values = [];
+                $values[] = ['movement' => $systemValues->movement];
+                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->systemId, $facility->systemName, $systemValues->status, $values);
+            }
+            if (Str::contains($systemValues->system->name, 'protect', true)) {
+                $values = [];
+                $values[] = ['faceStatus' => $systemValues->face_status];
+                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->systemId, $facility->systemName, $systemValues->status, $values);
+            }
+        }
+
         $this->loggingService->addLog($request, null);
-        return response()->json($facility, 200);
+        return response()->json($responseList, 200);
     }
 
     public function turnOffFacility(Request $request, $facilityId): JsonResponse
@@ -65,7 +88,8 @@ class FacilityController extends Controller
             $facility = Facility::where('id', $facilityId)->first();
             foreach ($facility->systems as $system) {
                 $system->update([
-                    'status' => FacilitySystemStatus::off
+                    'status' => FacilitySystemStatus::off,
+                    'notification_status' => FacilitySystemStatus::off,
                 ]);
             }
 
@@ -90,7 +114,8 @@ class FacilityController extends Controller
             $facility = Facility::where('id', $facilityId)->first();
             foreach ($facility->systems as $system) {
                 $system->update([
-                    'status' => FacilitySystemStatus::on
+                    'status' => FacilitySystemStatus::on,
+                    'notification_status' => FacilitySystemStatus::on,
                 ]);
             }
 

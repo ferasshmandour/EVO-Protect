@@ -110,6 +110,7 @@ class JoinRequestController extends Controller
                             'facility_id' => $facility->id,
                             'system_id' => $systemTypeId,
                             'status' => FacilitySystemStatus::off,
+                            'notification_status' => FacilitySystemStatus::off,
                         ]);
 
                         Log::info("Facility system {$facilitySystem->id} added successfully");

@@ -12,6 +12,7 @@ class FacilitySystem extends Model
         'facility_id',
         'system_id',
         'status',
+        'notification_status',
     ];
 
     public function facility(): BelongsTo

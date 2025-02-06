@@ -11,11 +11,12 @@ class SystemValue extends Model
     protected $fillable = [
         'facility_id',
         'system_id',
+        'status',
         'temperature',
         'smoke',
-        'spray',
-        'status',
+        'horn',
         'movement',
+        'face_status',
     ];
 
     public function facility(): BelongsTo
