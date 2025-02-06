@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->string('name');
             $table->foreignIdFor(User::class, 'user_id')->constrained()->onDelete('cascade');
             $table->foreignIdFor(Area::class, 'area_id')->constrained()->onDelete('cascade');
-            $table->string('location_url')->nullable();
+            $table->text('location_url')->nullable();
             $table->timestamps();
         });
     }

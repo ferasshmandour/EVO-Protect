@@ -15,20 +15,20 @@ class EvoSystemSeeder extends Seeder
     {
         EvoSystem::create([
             'name' => 'Fire system',
-            'devices' => 'test test',
-            'description' => 'test test',
+            'devices' => null,
+            'description' => null,
         ]);
 
         EvoSystem::create([
             'name' => 'Energy Saving system',
-            'devices' => 'test test',
-            'description' => 'test test',
+            'devices' => null,
+            'description' => null,
         ]);
 
         EvoSystem::create([
             'name' => 'Protection system',
-            'devices' => 'test test',
-            'description' => 'test test',
+            'devices' => null,
+            'description' => null,
         ]);
     }
 }

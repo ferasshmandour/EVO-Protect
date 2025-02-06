@@ -14,11 +14,16 @@ class AreaSeeder extends Seeder
     public function run(): void
     {
         Area::create([
-            'name' => 'one',
+            'name' => 'الجسر الأبيض',
         ]);
 
         Area::create([
-            'name' => 'two',
+            'name' => 'الميسات',
         ]);
+
+        Area::create([
+            'name' => 'المالكي',
+        ]);
+
     }
 }

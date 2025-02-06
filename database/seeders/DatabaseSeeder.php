@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             AreaSeeder::class,
             EvoSystemSeeder::class,
+            FacilitySeeder::class,
+            FacilitySystemSeeder::class,
+            SystemValueSeeder::class,
         ]);
     }
 }

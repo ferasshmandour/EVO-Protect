@@ -25,5 +25,16 @@ class UserSeeder extends Seeder
             'added_by' => AddedBy::dashboard,
             'is_client' => false,
         ]);
+
+        User::create([
+            'name' => 'test-user',
+            'email' => 'test@gmail.com',
+            'phone' => '000000000',
+            'password' => bcrypt('123456'),
+            'role_id' => 3,
+            'status' => UserStatus::active,
+            'added_by' => AddedBy::dashboard,
+            'is_client' => true,
+        ]);
     }
 }
