@@ -38,7 +38,7 @@ class FacilityController extends Controller
             $facilitySystems = [];
             $facilitySystems[] = DB::table('facility_systems', 'fs')
                 ->join('evo_systems as s', 's.id', '=', 'fs.system_id')
-                ->select('fs.id as systemId', 's.name as systemName', 'fs.status')
+                ->select('fs.id as systemId', 's.name as systemName', 'fs.status', 'fs.notification_status as notificationStatus')
                 ->where('facility_id', $facility->id)
                 ->get();
             $responseList[] = new FacilityAndSystemResponse($userId, $username, $facility->id, $facility->name, $facilitySystems);
@@ -128,6 +128,28 @@ class FacilityController extends Controller
             return response()->json(['message' => $response], 200);
         } catch (\Exception $e) {
             DB::rollBack();
+            $this->loggingService->addLog($request, $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getFacilitySettings(Request $request, $facilityId): JsonResponse
+    {
+        try {
+            $facility = Facility::find($facilityId);
+
+            $facilitySystems = [];
+            foreach ($facility->systems as $facilitySystem) {
+                $facilitySystems[] = ['name' => $facilitySystem->system->name, 'status' => $facilitySystem->status, 'notificationStatus' => $facilitySystem->notification_status];
+            }
+
+            $userId = $this->securityLayer->getUserIdFromToken();
+            $username = $this->securityLayer->getUsernameFromToken();
+            $response = new FacilityAndSystemResponse($userId, $username, $facility->id, $facility->name, $facilitySystems);
+
+            $this->loggingService->addLog($request, null);
+            return response()->json($response, 200);
+        } catch (\Exception $e) {
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
