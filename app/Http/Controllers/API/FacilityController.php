@@ -185,8 +185,8 @@ class FacilityController extends Controller
                 }
 
                 $system->update([
-                    'status' => $validatedRequest['systemStatus'][$index],
-                    'notification_status' => $validatedRequest['systemNotificationStatus'][$index],
+                    'status' => strtoupper($validatedRequest['systemStatus'][$index]),
+                    'notification_status' => strtoupper($validatedRequest['systemNotificationStatus'][$index]),
                 ]);
 
                 Log::info("System {$system->id} updated: status={$validatedRequest['systemStatus'][$index]}, notification_status={$validatedRequest['systemNotificationStatus'][$index]}");
