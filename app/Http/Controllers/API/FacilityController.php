@@ -176,7 +176,7 @@ class FacilityController extends Controller
                 'name' => $validatedRequest['facilityName'],
             ]);
 
-            Log::info("Facility {$facility->id} name has been updated to '{$validatedRequest['facilityName']}'");
+            Log::info("Facility {$facility->id} name has been updated to {$validatedRequest['facilityName']}");
 
             $systems = $facility->systems;
             foreach ($systems as $index => $system) {
@@ -189,15 +189,15 @@ class FacilityController extends Controller
                     'notification_status' => strtoupper($validatedRequest['systemNotificationStatus'][$index]),
                 ]);
 
-                Log::info("System {$system->id} updated: status={$validatedRequest['systemStatus'][$index]}, notification_status={$validatedRequest['systemNotificationStatus'][$index]}");
+                Log::info("System {$system->id} updated: status = {$validatedRequest['systemStatus'][$index]}, notificationStatus = {$validatedRequest['systemNotificationStatus'][$index]}");
             }
 
             DB::commit();
 
-            $response = "Facility {$facility->id} systems have been updated successfully";
-            Log::info($response);
-            $this->loggingService->addLog($request, $response);
+            Log::info("Facility {$facility->id} systems have been updated successfully");
 
+            $response = "Facility systems have been updated successfully";
+            $this->loggingService->addLog($request, $response);
             return response()->json(['message' => $response], 200);
         } catch (\Exception $e) {
             DB::rollBack();
