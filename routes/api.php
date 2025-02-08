@@ -81,6 +81,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/turnOnFacility/{facilityId}', [FacilityController::class, 'turnOnFacility']);
     // Settings
     Route::get('/getFacilitySettings/{facilityId}', [FacilityController::class, 'getFacilitySettings']);
+    Route::post('/updateFacilitySettings/{facilityId}', [FacilityController::class, 'updateFacilitySettings']);
+
 });
 
 Route::get('/clearCache', [UserController::class, 'clearCache']);

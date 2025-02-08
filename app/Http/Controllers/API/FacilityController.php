@@ -154,4 +154,56 @@ class FacilityController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function updateFacilitySettings(Request $request, $facilityId): JsonResponse
+    {
+        DB::beginTransaction();
+        try {
+            $validatedRequest = $request->validate([
+                'facilityName' => 'required|string',
+                'systemStatus' => 'required|array',
+                'systemStatus.*' => 'required|string',
+                'systemNotificationStatus' => 'required|array',
+                'systemNotificationStatus.*' => 'required|string',
+            ]);
+
+            $facility = Facility::find($facilityId);
+            if (!$facility) {
+                return response()->json(['error' => 'Facility not found'], 404);
+            }
+
+            $facility->update([
+                'name' => $validatedRequest['facilityName'],
+            ]);
+
+            Log::info("Facility {$facility->id} name has been updated to '{$validatedRequest['facilityName']}'");
+
+            $systems = $facility->systems;
+            foreach ($systems as $index => $system) {
+                if (!isset($validatedRequest['systemStatus'][$index]) || !isset($validatedRequest['systemNotificationStatus'][$index])) {
+                    continue;
+                }
+
+                $system->update([
+                    'status' => $validatedRequest['systemStatus'][$index],
+                    'notification_status' => $validatedRequest['systemNotificationStatus'][$index],
+                ]);
+
+                Log::info("System {$system->id} updated: status={$validatedRequest['systemStatus'][$index]}, notification_status={$validatedRequest['systemNotificationStatus'][$index]}");
+            }
+
+            DB::commit();
+
+            $response = "Facility {$facility->id} systems have been updated successfully";
+            Log::info($response);
+            $this->loggingService->addLog($request, $response);
+
+            return response()->json(['message' => $response], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error updating facility {$facilityId}: " . $e->getMessage());
+            $this->loggingService->addLog($request, $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
