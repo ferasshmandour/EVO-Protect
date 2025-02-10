@@ -9,6 +9,7 @@ use App\Http\Controllers\API\FeedBackController;
 use App\Http\Controllers\API\JoinRequestController;
 use App\Http\Controllers\API\MaintenanceRequestController;
 use App\Http\Controllers\API\RoleController;
+use App\Http\Controllers\API\StatisticsController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -83,6 +84,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/getFacilitySettings/{facilityId}', [FacilityController::class, 'getFacilitySettings']);
     Route::post('/updateFacilitySettings/{facilityId}', [FacilityController::class, 'updateFacilitySettings']);
 
+    // Statistics
+    Route::get('/statistics', [StatisticsController::class, 'statistics']);
 });
 
 Route::get('/clearCache', [UserController::class, 'clearCache']);
