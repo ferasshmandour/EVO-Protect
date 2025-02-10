@@ -9,6 +9,7 @@ use App\Http\DTO\FacilityValueResponse;
 use App\Http\Services\LoggingService;
 use App\Http\Services\SecurityLayer;
 use App\Models\Facility;
+use App\Models\FacilitySystem;
 use App\Models\SystemValue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -60,20 +61,22 @@ class FacilityController extends Controller
         $responseList = [];
         foreach ($facilities as $facility) {
             $systemValues = SystemValue::where(['facility_id' => $facility->facilityId, 'system_id' => $facility->systemId])->first();
+            $systemStatus = FacilitySystem::where(['facility_id' => $facility->facilityId, 'system_id' => $facility->systemId])->first()->status;
+            $systemNotificationStatus = FacilitySystem::where(['facility_id' => $facility->facilityId, 'system_id' => $facility->systemId])->first()->notification_status;
             if (Str::contains($systemValues->system->name, 'fire', true)) {
                 $values = [];
                 $values[] = ['temperature' => $systemValues->temperature, 'smoke' => $systemValues->smoke, 'horn' => $systemValues->horn];
-                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->facilityCode, $facility->systemId, $facility->systemName, $systemValues->status, $values);
+                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->facilityCode, $facility->systemId, $facility->systemName, $systemStatus, $systemNotificationStatus, $values);
             }
             if (Str::contains($systemValues->system->name, 'energy', true)) {
                 $values = [];
                 $values[] = ['movement' => $systemValues->movement];
-                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->facilityCode, $facility->systemId, $facility->systemName, $systemValues->status, $values);
+                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->facilityCode, $facility->systemId, $facility->systemName, $systemStatus, $systemNotificationStatus, $values);
             }
             if (Str::contains($systemValues->system->name, 'protect', true)) {
                 $values = [];
                 $values[] = ['faceStatus' => $systemValues->face_status];
-                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->facilityCode, $facility->systemId, $facility->systemName, $systemValues->status, $values);
+                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->facilityCode, $facility->systemId, $facility->systemName, $systemStatus, $systemNotificationStatus, $values);
             }
         }
 

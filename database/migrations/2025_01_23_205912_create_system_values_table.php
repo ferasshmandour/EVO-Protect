@@ -16,7 +16,6 @@ return new class extends Migration {
             $table->id();
             $table->foreignIdFor(Facility::class, 'facility_id')->constrained()->onDelete('cascade');
             $table->foreignIdFor(EvoSystem::class, 'system_id')->constrained()->onDelete('cascade');
-            $table->string('status')->nullable();
             $table->string('temperature')->nullable();
             $table->string('smoke')->nullable();
             $table->string('horn')->nullable();

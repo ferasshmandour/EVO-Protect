@@ -11,7 +11,6 @@ class SystemValue extends Model
     protected $fillable = [
         'facility_id',
         'system_id',
-        'status',
         'temperature',
         'smoke',
         'horn',

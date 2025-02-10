@@ -18,7 +18,6 @@ class SystemValueSeeder extends Seeder
         SystemValue::create([
             'facility_id' => 1,
             'system_id' => 1,
-            'status' => FacilitySystemStatus::on,
             'temperature' => '40',
             'smoke' => 'YES',
             'horn' => 'YES',
@@ -29,7 +28,6 @@ class SystemValueSeeder extends Seeder
         SystemValue::create([
             'facility_id' => 1,
             'system_id' => 2,
-            'status' => FacilitySystemStatus::on,
             'temperature' => null,
             'smoke' => null,
             'horn' => null,
@@ -40,7 +38,6 @@ class SystemValueSeeder extends Seeder
         SystemValue::create([
             'facility_id' => 1,
             'system_id' => 3,
-            'status' => FacilitySystemStatus::on,
             'temperature' => null,
             'smoke' => null,
             'horn' => null,
