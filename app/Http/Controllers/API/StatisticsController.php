@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\API;
 
 use App\Enums\UserRole;
-use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Services\LoggingService;
 use App\Http\Services\SecurityLayer;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

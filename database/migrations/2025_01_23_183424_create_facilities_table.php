@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->foreignIdFor(User::class, 'user_id')->constrained()->onDelete('cascade');
             $table->foreignIdFor(Area::class, 'area_id')->constrained()->onDelete('cascade');
             $table->text('location_url')->nullable();
+            $table->string('code')->unique();
             $table->timestamps();
         });
     }

@@ -41,7 +41,7 @@ class FacilityController extends Controller
                 ->select('fs.id as systemId', 's.name as systemName', 'fs.status', 'fs.notification_status as notificationStatus')
                 ->where('facility_id', $facility->id)
                 ->get();
-            $responseList[] = new FacilityAndSystemResponse($userId, $username, $facility->id, $facility->name, $facilitySystems);
+            $responseList[] = new FacilityAndSystemResponse($userId, $username, $facility->id, $facility->name, $facility->code, $facilitySystems);
         }
 
         $this->loggingService->addLog($request, null);
@@ -53,7 +53,7 @@ class FacilityController extends Controller
         $facilities = DB::table('facilities', 'f')
             ->join('facility_systems as fs', 'fs.facility_id', '=', 'f.id')
             ->join('evo_systems as s', 's.id', '=', 'fs.system_id')
-            ->select('f.id as facilityId', 'f.name as facilityName', 's.id as systemId', 's.name as systemName')
+            ->select('f.id as facilityId', 'f.name as facilityName', 'f.code as facilityCode', 's.id as systemId', 's.name as systemName')
             ->where('f.id', $facilityId)
             ->get();
 
@@ -63,17 +63,17 @@ class FacilityController extends Controller
             if (Str::contains($systemValues->system->name, 'fire', true)) {
                 $values = [];
                 $values[] = ['temperature' => $systemValues->temperature, 'smoke' => $systemValues->smoke, 'horn' => $systemValues->horn];
-                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->systemId, $facility->systemName, $systemValues->status, $values);
+                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->facilityCode, $facility->systemId, $facility->systemName, $systemValues->status, $values);
             }
             if (Str::contains($systemValues->system->name, 'energy', true)) {
                 $values = [];
                 $values[] = ['movement' => $systemValues->movement];
-                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->systemId, $facility->systemName, $systemValues->status, $values);
+                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->facilityCode, $facility->systemId, $facility->systemName, $systemValues->status, $values);
             }
             if (Str::contains($systemValues->system->name, 'protect', true)) {
                 $values = [];
                 $values[] = ['faceStatus' => $systemValues->face_status];
-                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->systemId, $facility->systemName, $systemValues->status, $values);
+                $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->facilityCode, $facility->systemId, $facility->systemName, $systemValues->status, $values);
             }
         }
 
@@ -145,7 +145,7 @@ class FacilityController extends Controller
 
             $userId = $this->securityLayer->getUserIdFromToken();
             $username = $this->securityLayer->getUsernameFromToken();
-            $response = new FacilityAndSystemResponse($userId, $username, $facility->id, $facility->name, $facilitySystems);
+            $response = new FacilityAndSystemResponse($userId, $username, $facility->id, $facility->name, $facility->code, $facilitySystems);
 
             $this->loggingService->addLog($request, null);
             return response()->json($response, 200);

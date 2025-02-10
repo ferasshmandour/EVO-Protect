@@ -18,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class JoinRequestController extends Controller
 {
@@ -101,6 +102,7 @@ class JoinRequestController extends Controller
                         'area_id' => $areaId,
                         'location_url' => $locationUrl,
                         'user_id' => $user->id,
+                        'code' => Str::random(5),
                     ]);
 
                     Log::info("Facility {$facility->name} added successfully");

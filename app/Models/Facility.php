@@ -14,6 +14,7 @@ class Facility extends Model
         'user_id',
         'area_id',
         'location_url',
+        'code',
     ];
 
     public function user(): BelongsTo

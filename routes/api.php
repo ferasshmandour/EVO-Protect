@@ -8,6 +8,7 @@ use App\Http\Controllers\API\FacilityController;
 use App\Http\Controllers\API\FeedBackController;
 use App\Http\Controllers\API\JoinRequestController;
 use App\Http\Controllers\API\MaintenanceRequestController;
+use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\RoleController;
 use App\Http\Controllers\API\StatisticsController;
 use App\Http\Controllers\API\UserController;
@@ -88,4 +89,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/statistics', [StatisticsController::class, 'statistics']);
 });
 
+// Integration
+Route::post('/sendNotification', [NotificationController::class, 'sendNotification']);
+
+// Clear cache
 Route::get('/clearCache', [UserController::class, 'clearCache']);
