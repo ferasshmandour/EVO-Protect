@@ -12,5 +12,6 @@ class SystemLog extends Model
         'body',
         'response',
         'ip',
+        'mac_address',
     ];
 }

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Enums\FaceStatus;
-use App\Enums\FacilitySystemStatus;
 use App\Models\SystemValue;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;

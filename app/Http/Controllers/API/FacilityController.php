@@ -40,7 +40,7 @@ class FacilityController extends Controller
             $facilitySystems = [];
             $facilitySystems[] = DB::table('facility_systems', 'fs')
                 ->join('evo_systems as s', 's.id', '=', 'fs.system_id')
-                ->select('fs.id as systemId', 's.name as systemName', 'fs.status', 'fs.notification_status as notificationStatus')
+                ->select('fs.id as systemId', 's.name as systemName', 'fs.status', 'fs.notification_status as notificationStatus', 'fs.mac_address as systemMacAddress')
                 ->where('facility_id', $facility->id)
                 ->get();
             $responseList[] = new FacilityAndSystemResponse($userId, $username, $facility->id, $facility->name, $facility->code, $facilitySystems);

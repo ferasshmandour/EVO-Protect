@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->foreignIdFor(EvoSystem::class, 'system_id')->constrained()->onDelete('cascade');
             $table->string('status');
             $table->string('notification_status');
+            $table->string('mac_address')->nullable();
             $table->timestamps();
         });
     }
