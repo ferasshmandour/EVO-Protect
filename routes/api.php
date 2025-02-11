@@ -90,9 +90,9 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Integration
-Route::post('/updateFireSystemValues', [IntegrationController::class, 'updateFireSystemValues']);
-Route::post('/updateEnergySystemValues', [IntegrationController::class, 'updateEnergySystemValues']);
-Route::post('/updateProtectionSystemValues', [IntegrationController::class, 'updateProtectionSystemValues']);
+Route::get('/updateFireSystemValues', [IntegrationController::class, 'updateFireSystemValues']);
+Route::get('/updateEnergySystemValues', [IntegrationController::class, 'updateEnergySystemValues']);
+Route::get('/updateProtectionSystemValues', [IntegrationController::class, 'updateProtectionSystemValues']);
 
 // Clear cache
 Route::get('/clearCache', [UserController::class, 'clearCache']);

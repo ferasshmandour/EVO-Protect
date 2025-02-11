@@ -25,7 +25,7 @@ class IntegrationController extends Controller
     {
         DB::beginTransaction();
         try {
-            $macAddress = $this->loggingService->getMacAddress();
+            $macAddress = $this->loggingService->getMacAddress($request);
             $facilitySystem = FacilitySystem::where('mac_address', $macAddress)->first();
 
             $systemValues = SystemValue::where(['facility_id' => $facilitySystem->facility->id, 'system_id' => $facilitySystem->system->id])->first();
@@ -53,7 +53,7 @@ class IntegrationController extends Controller
     {
         DB::beginTransaction();
         try {
-            $macAddress = $this->loggingService->getMacAddress();
+            $macAddress = $this->loggingService->getMacAddress($request);
             $facilitySystem = FacilitySystem::where('mac_address', $macAddress)->first();
 
             $systemValues = SystemValue::where(['facility_id' => $facilitySystem->facility->id, 'system_id' => $facilitySystem->system->id])->first();
@@ -79,7 +79,7 @@ class IntegrationController extends Controller
     {
         DB::beginTransaction();
         try {
-            $macAddress = $this->loggingService->getMacAddress();
+            $macAddress = $this->loggingService->getMacAddress($request);
             $facilitySystem = FacilitySystem::where('mac_address', $macAddress)->first();
 
             $systemValues = SystemValue::where(['facility_id' => $facilitySystem->facility->id, 'system_id' => $facilitySystem->system->id])->first();

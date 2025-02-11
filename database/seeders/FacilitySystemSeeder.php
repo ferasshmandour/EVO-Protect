@@ -14,20 +14,25 @@ class FacilitySystemSeeder extends Seeder
      */
     public function run(): void
     {
+        // Fire system
         FacilitySystem::create([
             'facility_id' => 1,
             'system_id' => 1,
             'status' => FacilitySystemStatus::off,
             'notification_status' => FacilitySystemStatus::off,
+            'mac_address' => 'a4:50:46:5b:94:e1',
         ]);
 
+        // Energy Saving system
         FacilitySystem::create([
             'facility_id' => 1,
             'system_id' => 2,
             'status' => FacilitySystemStatus::off,
             'notification_status' => FacilitySystemStatus::off,
+            'mac_address' => 'C6:FD:AF:FE:47:1A',
         ]);
 
+        // Protection system
         FacilitySystem::create([
             'facility_id' => 1,
             'system_id' => 3,
