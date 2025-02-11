@@ -33,6 +33,7 @@ class FacilitySystemSeeder extends Seeder
             'system_id' => 3,
             'status' => FacilitySystemStatus::off,
             'notification_status' => FacilitySystemStatus::off,
+            'mac_address' => 'A8-5E-45-C3-F8-00',
         ]);
     }
 }
