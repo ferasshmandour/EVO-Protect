@@ -11,6 +11,7 @@ use App\Http\Services\SecurityLayer;
 use App\Models\Facility;
 use App\Models\FacilitySystem;
 use App\Models\SystemValue;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -103,7 +104,7 @@ class FacilityController extends Controller
             $response = "The facility systems have been turned off";
             $this->loggingService->addLog($request, $response);
             return response()->json(['message' => $response], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
@@ -129,7 +130,7 @@ class FacilityController extends Controller
             $response = "The facility systems have been turned on";
             $this->loggingService->addLog($request, $response);
             return response()->json(['message' => $response], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
@@ -152,7 +153,7 @@ class FacilityController extends Controller
 
             $this->loggingService->addLog($request, null);
             return response()->json($response, 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -202,7 +203,7 @@ class FacilityController extends Controller
             $response = "Facility systems have been updated successfully";
             $this->loggingService->addLog($request, $response);
             return response()->json(['message' => $response], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error("Error updating facility {$facilityId}: " . $e->getMessage());
             $this->loggingService->addLog($request, $e->getMessage());

@@ -7,11 +7,16 @@ use App\Enums\FacilitySystemStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
+use App\Http\DTO\FacilityResponse;
+use App\Http\DTO\SystemResponse;
+use App\Http\DTO\UserResponse;
 use App\Http\Services\LoggingService;
 use App\Http\Services\SecurityLayer;
 use App\Models\Facility;
 use App\Models\FacilitySystem;
+use App\Models\Role;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -34,23 +39,55 @@ class UserController extends Controller
     {
         $role = $this->securityLayer->getRoleFromToken();
         if ($role == UserRole::superAdmin->value || $role == UserRole::admin->value) {
-            $users = DB::table('users', 'u')
-                ->join('roles as r', 'r.id', '=', 'u.role_id')
-                ->select([
-                    'u.id as userId',
-                    'u.name as username',
-                    'u.phone',
-                    'u.email',
-                    'r.name as role',
-                    'u.status',
-                    DB::raw("case when u.is_client = 1 then 'YES' else 'NO' end as isClient"),
-                    'u.added_by as addedBy',
-                    'u.created_at as createdAt'
-                ])->where('r.name', '=', UserRole::user)
-                ->get();
+            $users = User::where('role_id', Role::where('name', UserRole::user->value)->first()->id)->get();
+
+            $responseList = [];
+            foreach ($users as $user) {
+                $userFacilities = [];
+                foreach ($user->facilities as $facility) {
+                    $facilitySystems = [];
+                    foreach ($facility->systems as $system) {
+                        $facilitySystems[] = new SystemResponse(
+                            $system->system->id,
+                            $system->system->name,
+                            $system->system->description,
+                            $system->system->devices,
+                            $facility->id
+                        );
+                    }
+
+                    $userFacilities[] = new FacilityResponse(
+                        $facility->id,
+                        $facility->name,
+                        $facility->user->id,
+                        $facility->user->name,
+                        $facility->area->id,
+                        $facility->area->name,
+                        $facility->code,
+                        $facility->location_url,
+                        $facility->systems->count(),
+                        $facilitySystems
+                    );
+                }
+
+                $responseList[] = new UserResponse(
+                    $user->id,
+                    $user->name,
+                    $user->phone,
+                    $user->email,
+                    $user->status,
+                    $user->is_client,
+                    $user->added_by,
+                    $user->created_at,
+                    $user->role->id,
+                    $user->role->name,
+                    $user->facilities->count(),
+                    $userFacilities
+                );
+            }
 
             $this->loggingService->addLog($request, null);
-            return response()->json($users, 200);
+            return response()->json($responseList, 200);
         } else {
             return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
         }
@@ -59,8 +96,52 @@ class UserController extends Controller
     public function getUserById(Request $request, $userId): JsonResponse
     {
         $user = User::where('id', $userId)->first();
+
+        $responseList = [];
+        $userFacilities = [];
+        foreach ($user->facilities as $facility) {
+            $facilitySystems = [];
+            foreach ($facility->systems as $system) {
+                $facilitySystems[] = new SystemResponse(
+                    $system->system->id,
+                    $system->system->name,
+                    $system->system->description,
+                    $system->system->devices,
+                    $facility->id
+                );
+            }
+
+            $userFacilities[] = new FacilityResponse(
+                $facility->id,
+                $facility->name,
+                $facility->user->id,
+                $facility->user->name,
+                $facility->area->id,
+                $facility->area->name,
+                $facility->code,
+                $facility->location_url,
+                $facility->systems->count(),
+                $facilitySystems
+            );
+        }
+
+        $responseList[] = new UserResponse(
+            $user->id,
+            $user->name,
+            $user->phone,
+            $user->email,
+            $user->status,
+            $user->is_client,
+            $user->added_by,
+            $user->created_at,
+            $user->role->id,
+            $user->role->name,
+            $user->facilities->count(),
+            $userFacilities
+        );
+
         $this->loggingService->addLog($request, null);
-        return response()->json($user, 200);
+        return response()->json($responseList, 200);
     }
 
     public function addUser(Request $request): JsonResponse
@@ -141,7 +222,7 @@ class UserController extends Controller
             } else {
                 return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
@@ -224,7 +305,7 @@ class UserController extends Controller
             } else {
                 return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
@@ -256,7 +337,7 @@ class UserController extends Controller
                 ->where('role_id', '=', $request->roleId)
                 ->get();
             return response()->json($sql, 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
@@ -296,7 +377,7 @@ class UserController extends Controller
             $response = 'User profile updated successfully';
             $this->loggingService->addLog($request, $response);
             return response()->json(['message' => $response], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }

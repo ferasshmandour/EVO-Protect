@@ -8,6 +8,7 @@ use App\Http\Services\LoggingService;
 use App\Http\Services\SecurityLayer;
 use App\Models\Role;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -66,7 +67,7 @@ class RoleController extends Controller
             } else {
                 return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
         }

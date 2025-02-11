@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Services\LoggingService;
 use App\Models\Facility;
 use App\Models\SystemValue;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +57,7 @@ class IntegrationController extends Controller
             $response = 'The system values updated successfully';
             $this->loggingService->addLog($request, $response);
             return response()->json(['message' => $response], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
@@ -94,7 +95,7 @@ class IntegrationController extends Controller
             $response = 'The system values updated successfully';
             $this->loggingService->addLog($request, $response);
             return response()->json(['message' => $response], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
@@ -132,7 +133,7 @@ class IntegrationController extends Controller
             $response = 'The system values updated successfully';
             $this->loggingService->addLog($request, $response);
             return response()->json(['message' => $response], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);

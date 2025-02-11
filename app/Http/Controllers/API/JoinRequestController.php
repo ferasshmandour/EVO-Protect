@@ -8,12 +8,14 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\DTO\FacilityResponse;
 use App\Http\DTO\JoinRequestResponse;
+use App\Http\DTO\SystemResponse;
 use App\Http\Services\LoggingService;
 use App\Http\Services\SecurityLayer;
 use App\Models\Facility;
 use App\Models\FacilitySystem;
 use App\Models\JoinRequest;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,12 +46,32 @@ class JoinRequestController extends Controller
 
                 $facilities = [];
                 foreach ($user->facilities as $facility) {
-                    $facilityResponse = new FacilityResponse($facility->id, $facility->name, $facility->user->id, $facility->user->name, $facility->area->id, $facility->area->name, $facility->location_url);
-                    $facilities[] = $facilityResponse;
+                    $facilitySystems = [];
+                    foreach ($facility->systems as $system) {
+                        $facilitySystems[] = new SystemResponse(
+                            $system->system->id,
+                            $system->system->name,
+                            $system->system->description,
+                            $system->system->devices,
+                            $facility->id
+                        );
+                    }
+
+                    $facilities[] = new FacilityResponse(
+                        $facility->id,
+                        $facility->name,
+                        $facility->user->id,
+                        $facility->user->name,
+                        $facility->area->id,
+                        $facility->area->name,
+                        $facility->code,
+                        $facility->location_url,
+                        $facility->systems->count(),
+                        $facilitySystems
+                    );
                 }
 
-                $joinRequestResponse = new JoinRequestResponse($joinRequest->id, $joinRequest->status, $user->id, $user->name, $user->phone, $user->email, $joinRequest->added_by, $numberOfFacilities, $facilities);
-                $responseList[] = $joinRequestResponse;
+                $responseList[] = new JoinRequestResponse($joinRequest->id, $joinRequest->status, $user->id, $user->name, $user->phone, $user->email, $joinRequest->added_by, $numberOfFacilities, $facilities);
             }
 
             $this->loggingService->addLog($request, null);
@@ -135,7 +157,7 @@ class JoinRequestController extends Controller
             } else {
                 return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
@@ -165,7 +187,7 @@ class JoinRequestController extends Controller
             } else {
                 return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -194,7 +216,7 @@ class JoinRequestController extends Controller
             } else {
                 return response()->json(['message' => 'You don\'t have permission to perform this action'], 403);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }

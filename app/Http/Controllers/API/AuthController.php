@@ -7,6 +7,7 @@ use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Services\LoggingService;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,7 +54,7 @@ class AuthController extends Controller
             $response = 'User registered successfully';
             $this->loggingService->addLog($request, $response);
             return response()->json(['token' => $token, 'message' => $response], 201);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -74,7 +75,7 @@ class AuthController extends Controller
             } else {
                 return response()->json(['error' => 'Invalid credentials'], 422);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -98,7 +99,7 @@ class AuthController extends Controller
             }
 
             return response()->json(['error' => 'No active token found'], 401);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->loggingService->addLog($request, $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
