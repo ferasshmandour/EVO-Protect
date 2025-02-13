@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Enums\AddedBy;
 use App\Enums\UserRole;
+use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Services\LoggingService;
 use App\Http\Services\SecurityLayer;
@@ -65,6 +67,8 @@ class AdminController extends Controller
                     'email' => $validatedRequest['email'] ?? null,
                     'password' => bcrypt('123456'),
                     'role_id' => 2,
+                    'status' => UserStatus::active,
+                    'added_by' => AddedBy::dashboard,
                 ]);
 
                 Log::info("Admin {$admin->name} added successfully");
