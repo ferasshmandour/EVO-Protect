@@ -9,6 +9,7 @@ use App\Http\Controllers\API\FeedBackController;
 use App\Http\Controllers\API\IntegrationController;
 use App\Http\Controllers\API\JoinRequestController;
 use App\Http\Controllers\API\MaintenanceRequestController;
+use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\RoleController;
 use App\Http\Controllers\API\StatisticsController;
 use App\Http\Controllers\API\UserController;
@@ -93,6 +94,10 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/updateFireSystemValues', [IntegrationController::class, 'updateFireSystemValues']);
 Route::get('/updateEnergySystemValues', [IntegrationController::class, 'updateEnergySystemValues']);
 Route::get('/updateProtectionSystemValues', [IntegrationController::class, 'updateProtectionSystemValues']);
+
+// Notifications
+Route::get('/getAllNotifications', [NotificationController::class, 'getAllNotifications']);
+Route::get('/getNotificationById/{notificationId}', [NotificationController::class, 'getNotificationById']);
 
 // Clear cache
 Route::get('/clearCache', [UserController::class, 'clearCache']);
