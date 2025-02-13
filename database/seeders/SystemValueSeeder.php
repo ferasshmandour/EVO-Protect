@@ -17,8 +17,8 @@ class SystemValueSeeder extends Seeder
         SystemValue::create([
             'facility_id' => 1,
             'system_id' => 1,
-            'temperature' => '40',
-            'smoke' => 'YES',
+            'temperature' => null,
+            'smoke' => null,
             'movement' => null,
             'face_status' => null,
         ]);
@@ -28,7 +28,7 @@ class SystemValueSeeder extends Seeder
             'system_id' => 2,
             'temperature' => null,
             'smoke' => null,
-            'movement' => 'YES',
+            'movement' => null,
             'face_status' => null,
         ]);
 
@@ -38,7 +38,7 @@ class SystemValueSeeder extends Seeder
             'temperature' => null,
             'smoke' => null,
             'movement' => null,
-            'face_status' => FaceStatus::unknownFace,
+            'face_status' => null,
         ]);
     }
 }

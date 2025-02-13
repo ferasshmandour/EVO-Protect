@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Services\LoggingService;
 use App\Http\Services\NotificationService;
+use App\Models\EvoSystem;
 use App\Models\FacilitySystem;
 use App\Models\SystemValue;
 use Exception;
@@ -29,7 +30,8 @@ class IntegrationController extends Controller
         DB::beginTransaction();
         try {
             $macAddress = $this->loggingService->getMacAddress($request);
-            $facilitySystem = FacilitySystem::where('mac_address', $macAddress)->first();
+            $systemId = EvoSystem::where('name', 'Fire system')->first()->id;
+            $facilitySystem = FacilitySystem::where(['mac_address' => $macAddress, 'system_id' => $systemId])->first();
 
             $systemValues = SystemValue::where(['facility_id' => $facilitySystem->facility->id, 'system_id' => $facilitySystem->system->id])->first();
             $systemValues->update([
@@ -58,7 +60,8 @@ class IntegrationController extends Controller
         DB::beginTransaction();
         try {
             $macAddress = $this->loggingService->getMacAddress($request);
-            $facilitySystem = FacilitySystem::where('mac_address', $macAddress)->first();
+            $systemId = EvoSystem::where('name', 'Energy Saving system')->first()->id;
+            $facilitySystem = FacilitySystem::where(['mac_address' => $macAddress, 'system_id' => $systemId])->first();
 
             $systemValues = SystemValue::where(['facility_id' => $facilitySystem->facility->id, 'system_id' => $facilitySystem->system->id])->first();
             $systemValues->update([
@@ -86,7 +89,8 @@ class IntegrationController extends Controller
         DB::beginTransaction();
         try {
             $macAddress = $this->loggingService->getMacAddress($request);
-            $facilitySystem = FacilitySystem::where('mac_address', $macAddress)->first();
+            $systemId = EvoSystem::where('name', 'Protection system')->first()->id;
+            $facilitySystem = FacilitySystem::where(['mac_address' => $macAddress, 'system_id' => $systemId])->first();
 
             $systemValues = SystemValue::where(['facility_id' => $facilitySystem->facility->id, 'system_id' => $facilitySystem->system->id])->first();
             $systemValues->update([
