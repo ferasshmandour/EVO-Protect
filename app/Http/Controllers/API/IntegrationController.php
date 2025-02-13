@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Services\LoggingService;
+use App\Http\Services\NotificationService;
 use App\Models\FacilitySystem;
 use App\Models\SystemValue;
 use Exception;
@@ -15,10 +16,12 @@ use Illuminate\Support\Facades\Log;
 class IntegrationController extends Controller
 {
     private LoggingService $loggingService;
+    private NotificationService $notificationService;
 
-    public function __construct(LoggingService $loggingService)
+    public function __construct(LoggingService $loggingService, NotificationService $notificationService)
     {
         $this->loggingService = $loggingService;
+        $this->notificationService = $notificationService;
     }
 
     public function updateFireSystemValues(Request $request): JsonResponse
@@ -32,8 +35,9 @@ class IntegrationController extends Controller
             $systemValues->update([
                 'temperature' => $request->temperature,
                 'smoke' => strtoupper($request->smoke),
-                'horn' => strtoupper($request->horn),
             ]);
+
+            $this->notificationService->sendNotification($request->message, $macAddress, $request->temperature, $request->smoke);
 
             DB::commit();
 
@@ -61,6 +65,8 @@ class IntegrationController extends Controller
                 'movement' => strtoupper($request->movement),
             ]);
 
+            $this->notificationService->sendNotification($request->message, $macAddress, $request->movement);
+
             DB::commit();
 
             Log::info("The system {$facilitySystem->system->id} values updated successfully");
@@ -87,6 +93,8 @@ class IntegrationController extends Controller
                 'face_status' => strtoupper($request->faceStatus),
             ]);
 
+            $this->notificationService->sendNotification($request->message, $macAddress, $request->faceStatus);
+
             DB::commit();
 
             Log::info("The system {$facilitySystem->system->id} values updated successfully");
@@ -100,15 +108,4 @@ class IntegrationController extends Controller
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
-
-//    public function sendNotification(Request $request, $message, $facilityCode)
-//    {
-//        try {
-//            $notification =
-//        } catch (\Exception $e) {
-//            DB::rollBack();
-//            $this->loggingService->addLog($request, $e->getMessage());
-//            return response()->json(['message' => $e->getMessage()], 500);
-//        }
-//    }
 }

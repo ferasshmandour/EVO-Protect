@@ -19,7 +19,6 @@ class SystemValueSeeder extends Seeder
             'system_id' => 1,
             'temperature' => '40',
             'smoke' => 'YES',
-            'horn' => 'YES',
             'movement' => null,
             'face_status' => null,
         ]);
@@ -29,7 +28,6 @@ class SystemValueSeeder extends Seeder
             'system_id' => 2,
             'temperature' => null,
             'smoke' => null,
-            'horn' => null,
             'movement' => 'YES',
             'face_status' => null,
         ]);
@@ -39,7 +37,6 @@ class SystemValueSeeder extends Seeder
             'system_id' => 3,
             'temperature' => null,
             'smoke' => null,
-            'horn' => null,
             'movement' => null,
             'face_status' => FaceStatus::unknownFace,
         ]);

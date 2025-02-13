@@ -66,7 +66,7 @@ class FacilityController extends Controller
             $systemNotificationStatus = FacilitySystem::where(['facility_id' => $facility->facilityId, 'system_id' => $facility->systemId])->first()->notification_status;
             if (Str::contains($systemValues->system->name, 'fire', true)) {
                 $values = [];
-                $values[] = ['temperature' => $systemValues->temperature, 'smoke' => $systemValues->smoke, 'horn' => $systemValues->horn];
+                $values[] = ['temperature' => $systemValues->temperature, 'smoke' => $systemValues->smoke];
                 $responseList[] = new FacilityValueResponse($facility->facilityId, $facility->facilityName, $facility->facilityCode, $facility->systemId, $facility->systemName, $systemStatus, $systemNotificationStatus, $values);
             }
             if (Str::contains($systemValues->system->name, 'energy', true)) {

@@ -12,7 +12,12 @@ return new class extends Migration {
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->string('message')->nullable();
+            $table->string('temperature')->nullable();
+            $table->string('smoke')->nullable();
+            $table->string('movement')->nullable();
+            $table->string('face_status')->nullable();
+            $table->string('mac_address')->nullable();
             $table->timestamps();
         });
     }

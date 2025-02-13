@@ -18,7 +18,6 @@ return new class extends Migration {
             $table->foreignIdFor(EvoSystem::class, 'system_id')->constrained()->onDelete('cascade');
             $table->string('temperature')->nullable();
             $table->string('smoke')->nullable();
-            $table->string('horn')->nullable();
             $table->string('movement')->nullable();
             $table->string('face_status')->nullable();
             $table->timestamps();

@@ -13,7 +13,6 @@ class SystemValue extends Model
         'system_id',
         'temperature',
         'smoke',
-        'horn',
         'movement',
         'face_status',
     ];
