@@ -20,7 +20,7 @@ class FacilitySystemSeeder extends Seeder
             'system_id' => 1,
             'status' => FacilitySystemStatus::off,
             'notification_status' => FacilitySystemStatus::off,
-            'mac_address' => 'A8-5E-45-C3-F8-00',
+            'mac_address' => 'A4:CF:12:F2:A7:AB',
         ]);
 
         // Energy Saving system
@@ -29,7 +29,7 @@ class FacilitySystemSeeder extends Seeder
             'system_id' => 2,
             'status' => FacilitySystemStatus::off,
             'notification_status' => FacilitySystemStatus::off,
-            'mac_address' => 'A8-5E-45-C3-F8-00',
+            'mac_address' => 'C8:2E:18:26:2F:50',
         ]);
 
         // Protection system
@@ -38,7 +38,7 @@ class FacilitySystemSeeder extends Seeder
             'system_id' => 3,
             'status' => FacilitySystemStatus::off,
             'notification_status' => FacilitySystemStatus::off,
-            'mac_address' => 'A8-5E-45-C3-F8-00',
+            'mac_address' => 'C8:2E:18:26:2F:50',
         ]);
     }
 }

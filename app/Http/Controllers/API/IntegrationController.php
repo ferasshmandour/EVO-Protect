@@ -39,7 +39,7 @@ class IntegrationController extends Controller
                 'smoke' => strtoupper($request->smoke),
             ]);
 
-            $this->notificationService->sendNotification($request->message, $macAddress, $request->temperature, $request->smoke);
+            $this->notificationService->sendFireNotification($request->message, $macAddress, $request->temperature, $request->smoke);
 
             DB::commit();
 
@@ -68,7 +68,7 @@ class IntegrationController extends Controller
                 'movement' => strtoupper($request->movement),
             ]);
 
-            $this->notificationService->sendNotification($request->message, $macAddress, $request->movement);
+            $this->notificationService->sendEnergyNotification($request->message, $macAddress, $request->movement);
 
             DB::commit();
 
@@ -97,7 +97,7 @@ class IntegrationController extends Controller
                 'face_status' => strtoupper($request->faceStatus),
             ]);
 
-            $this->notificationService->sendNotification($request->message, $macAddress, $request->faceStatus);
+            $this->notificationService->sendProtectionNotification($request->message, $macAddress, $request->faceStatus);
 
             DB::commit();
 

@@ -9,7 +9,7 @@ use Mockery\Exception;
 
 class NotificationService
 {
-    public function sendNotification($message, $macAddress = null, $temperature = null, $smoke = null, $movement = null, $faceStatus = null): void
+    public function sendFireNotification($message, $macAddress, $temperature, $smoke): void
     {
         DB::beginTransaction();
         try {
@@ -18,7 +18,41 @@ class NotificationService
                 'mac_address' => $macAddress,
                 'temperature' => $temperature,
                 'smoke' => strtoupper($smoke),
+            ]);
+
+            DB::commit();
+            Log::info("Notification {$notification->id} sent successfully");
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::info("Error sending notification: " . $e->getMessage());
+        }
+    }
+
+    public function sendEnergyNotification($message, $macAddress, $movement): void
+    {
+        DB::beginTransaction();
+        try {
+            $notification = Notification::create([
+                'message' => $message,
+                'mac_address' => $macAddress,
                 'movement' => strtoupper($movement),
+            ]);
+
+            DB::commit();
+            Log::info("Notification {$notification->id} sent successfully");
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::info("Error sending notification: " . $e->getMessage());
+        }
+    }
+
+    public function sendProtectionNotification($message, $macAddress, $faceStatus): void
+    {
+        DB::beginTransaction();
+        try {
+            $notification = Notification::create([
+                'message' => $message,
+                'mac_address' => $macAddress,
                 'face_status' => strtoupper($faceStatus),
             ]);
 
